@@ -19,6 +19,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login',   [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
     Route::post('/register',[AuthController::class, 'register'])->name('register.post');
+    Route::get('kuda/create', [KudaController::class, 'create'])->name('kuda.create');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

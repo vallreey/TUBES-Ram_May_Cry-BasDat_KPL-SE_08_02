@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Kuda;
 
+use App\Models\Kuda;
 use Illuminate\Http\Request;
 
 class KudaController extends Controller
@@ -24,7 +24,7 @@ class KudaController extends Controller
             $kuda = Kuda::with(['peternakan', 'lisensi'])
                 ->whereHas('transaksi', function ($q) use ($user) {
                     $q->where('id_pembeli', $user->id_user)
-                    ->where('status_transaksi', 'selesai');
+                      ->where('status_transaksi', 'selesai');
                 })
                 ->latest()
                 ->get();
@@ -73,31 +73,36 @@ class KudaController extends Controller
 
     public function create()
     {
-        return view('admin.dashboard');
+        return view('admin.kuda.create');
     }
 
     public function store(Request $request)
     {
-        //
-    }
+        Kuda::create($request->all());
 
-    public function show($id)
-    {
-        return view('admin.dashboard');
+        return redirect()->route('kuda.index');
     }
 
     public function edit($id)
     {
-        return view('admin.dashboard');
+        $kuda = Kuda::findOrFail($id);
+
+        return view('admin.kuda.edit', compact('kuda'));
     }
 
     public function update(Request $request, $id)
     {
-        //
+        $kuda = Kuda::findOrFail($id);
+        $kuda->update($request->all());
+
+        return redirect()->route('kuda.index');
     }
 
     public function destroy($id)
     {
-        //
+        $kuda = Kuda::findOrFail($id);
+        $kuda->delete();
+
+        return redirect()->route('kuda.index');
     }
 }
