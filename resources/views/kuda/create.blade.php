@@ -53,16 +53,6 @@
                    required>
           </div>
 
-          <label class="form-label">ID Peternakan</label>
-          <div class="input-group input-group-outline mb-3">
-            <input type="number"
-                   name="id_peternakan"
-                   class="form-control"
-                   placeholder="ID Peternakan"
-                   value="{{ old('id_peternakan') }}"
-                   required>
-          </div>
-
           <label class="form-label">ID Ibu</label>
           <div class="input-group input-group-outline mb-3">
             <input type="number"
