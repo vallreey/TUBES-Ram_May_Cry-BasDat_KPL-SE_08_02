@@ -45,13 +45,24 @@
                   @csrf
 
                   <div class="input-group input-group-outline my-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
-                  </div>
+                <input
+                    type="email"
+                    name="email"
+                    class="form-control"
+                    placeholder="Email"
+                    value="{{ old('email') }}"
+                    required
+                >
+            </div>
 
                   <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="Password"
+                        required
+                    >
                   </div>
 
                   <div class="form-check form-switch d-flex align-items-center mb-3">

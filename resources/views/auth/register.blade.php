@@ -44,42 +44,68 @@
                   @csrf
 
                   <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Nama Lengkap</label>
-                    <input type="text" name="nama_lengkap" class="form-control" value="{{ old('nama_lengkap') }}" required>
-                  </div>
+                    <input
+                        type="text"
+                        name="nama_lengkap"
+                        class="form-control"
+                        placeholder="Nama Lengkap"
+                        value="{{ old('nama_lengkap') }}"
+                        required
+                    >
+                </div>
 
                   <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
-                  </div>
+                    <input type="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="Email"
+                        value="{{ old('email') }}"
+                        required>
+                </div>
 
-                  <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">No. Telepon</label>
-                    <input type="text" name="no_telp" class="form-control" value="{{ old('no_telp') }}">
-                  </div>
+                <div class="input-group input-group-outline mb-3">
+                    <input type="text"
+                        name="no_telp"
+                        class="form-control"
+                        placeholder="No. Telepon"
+                        value="{{ old('no_telp') }}">
+                </div>
 
-                  <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Alamat</label>
-                    <input type="text" name="alamat" class="form-control" value="{{ old('alamat') }}">
-                  </div>
+                <div class="input-group input-group-outline mb-3">
+                    <input type="text"
+                        name="alamat"
+                        class="form-control"
+                        placeholder="Alamat"
+                        value="{{ old('alamat') }}">
+                </div>
 
-                  <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Daftar Sebagai</label>
+                <div class="input-group input-group-outline mb-3">
                     <select name="role" class="form-control">
-                      <option value="pembeli" {{ old('role') == 'pembeli' ? 'selected' : '' }}>Pembeli</option>
-                      <option value="peternak" {{ old('role') == 'peternak' ? 'selected' : '' }}>Peternak</option>
+                        <option value="" disabled selected>Pilih Role</option>
+                        <option value="pembeli" {{ old('role') == 'pembeli' ? 'selected' : '' }}>
+                            Pembeli
+                        </option>
+                        <option value="peternak" {{ old('role') == 'peternak' ? 'selected' : '' }}>
+                            Peternak
+                        </option>
                     </select>
-                  </div>
+                </div>
 
-                  <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                  </div>
+                <div class="input-group input-group-outline mb-3">
+                    <input type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="Password"
+                        required>
+                </div>
 
-                  <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Konfirmasi Password</label>
-                    <input type="password" name="password_confirmation" class="form-control" required>
-                  </div>
+                <div class="input-group input-group-outline mb-3">
+                    <input type="password"
+                        name="password_confirmation"
+                        class="form-control"
+                        placeholder="Konfirmasi Password"
+                        required>
+                </div>
 
                   <div class="text-center">
                     <button type="submit" class="btn bg-gradient-dark w-100 mt-3 mb-2">Daftar</button>
