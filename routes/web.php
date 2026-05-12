@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 // Auth (tidak perlu login)
 // -------------------------------------------------------
 Route::middleware('guest')->group(function () {
+    Route::get('/testapi', [AuthController::class, 'testApi']);
     Route::get('/login',    [AuthController::class, 'loginForm'])->name('login');
     Route::post('/login',   [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'registerForm'])->name('register');

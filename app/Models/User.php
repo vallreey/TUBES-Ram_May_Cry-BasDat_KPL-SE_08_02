@@ -24,7 +24,7 @@ class User extends Authenticatable
      */
 
     protected $primaryKey = 'id_user';
-    
+
     protected function casts(): array
     {
         return [
@@ -32,4 +32,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    protected $fillable = [
+    'nama_lengkap',
+    'email',
+    'no_telp',
+    'alamat',
+    'role',
+    'password',
+    ];
 }

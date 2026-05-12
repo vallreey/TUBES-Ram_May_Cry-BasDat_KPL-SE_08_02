@@ -87,4 +87,10 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+    public function testApi()
+{
+    return response()->json([
+        'message' => 'API berhasil jalan'
+    ]);
+}
 }
