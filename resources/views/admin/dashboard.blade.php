@@ -26,7 +26,7 @@
         </div>
         <hr class="dark horizontal my-0">
         <div class="card-footer p-2 ps-3">
-          <p class="mb-0 text-sm">Kuda terdaftar di sistem</p>
+          <p class="mb-0 text-sm">Kuda yang dimiliki</p>
         </div>
       </div>
     </div>
@@ -127,7 +127,11 @@
                   <tr>
                     <td>
                       <div class="d-flex px-2 py-1">
-                        <i class="material-symbols-rounded text-dark me-2 my-auto">pets</i>
+                        <img
+                            src="{{ asset('material/img/sendiri/horseshoe_hitam.png') }}"
+                            class="me-2 my-auto"
+                            style="width:18px; height:18px;"
+                        >
                         <div class="d-flex flex-column justify-content-center">
                           <h6 class="mb-0 text-sm">{{ $t->kuda->nama_kuda ?? '-' }}</h6>
                         </div>
@@ -140,17 +144,58 @@
                       <span class="text-xs font-weight-bold">Rp {{ number_format($t->harga_final, 0, ',', '.') }}</span>
                     </td>
                     <td class="align-middle text-center">
-                      @php
-                        $badge = match($t->status_transaksi) {
-                          'selesai'    => 'success',
-                          'proses'     => 'info',
-                          'pending'    => 'warning',
-                          'dibatalkan' => 'danger',
-                          default      => 'secondary',
-                        };
-                      @endphp
-                      <span class="badge badge-sm bg-gradient-{{ $badge }}">{{ ucfirst($t->status_transaksi) }}</span>
-                    </td>
+                @php
+                    // AUTOMATA TRANSAKSI
+
+                    $status = $t->status_transaksi;
+
+                    $automata = match($status) {
+                    'pending' => [
+                        'badge' => 'warning',
+                        'icon' => 'hourglass_empty',
+                        'text' => 'Pending',
+                        'next' => 'Menunggu diproses'
+                    ],
+                    'proses' => [
+                        'badge' => 'info',
+                        'icon' => 'sync',
+                        'text' => 'Proses',
+                        'next' => 'Sedang diproses'
+                    ],
+                    'selesai' => [
+                        'badge' => 'success',
+                        'icon' => 'check_circle',
+                        'text' => 'Selesai',
+                        'next' => 'Transaksi selesai'
+                    ],
+                    'dibatalkan' => [
+                        'badge' => 'danger',
+                        'icon' => 'cancel',
+                        'text' => 'Dibatalkan',
+                        'next' => 'Transaksi dibatalkan'
+                    ],
+                    default => [
+                        'badge' => 'secondary',
+                        'icon' => 'help',
+                        'text' => 'Tidak diketahui',
+                        'next' => '-'
+                    ],
+                    };
+                @endphp
+
+                <span class="badge badge-sm bg-gradient-{{ $automata['badge'] }}">
+                    <i class="material-symbols-rounded text-xs align-middle">
+                    {{ $automata['icon'] }}
+                    </i>
+                    {{ $automata['text'] }}
+                </span>
+
+                <br>
+
+                <small class="text-secondary text-xs">
+                    {{ $automata['next'] }}
+                </small>
+                </td>
                   </tr>
                 @empty
                   <tr>
