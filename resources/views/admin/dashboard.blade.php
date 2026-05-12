@@ -17,7 +17,10 @@
               <h4 class="mb-0">{{ $totalKuda ?? 0 }}</h4>
             </div>
             <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
-              <i class="material-symbols-rounded opacity-10">pets</i>
+                <img
+                src="{{ asset('material/img/sendiri/horseshoe_putih.png') }}"
+                style="width:24px; height:24px; margin-top:12px;"
+            >
             </div>
           </div>
         </div>
@@ -57,7 +60,10 @@
               <h4 class="mb-0">{{ $totalBreeding ?? 0 }}</h4>
             </div>
             <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
-              <i class="material-symbols-rounded opacity-10">join</i>
+              <img
+                src="{{ asset('material/img/sendiri/Gender_putih.png') }}"
+                style="width:24px; height:24px; margin-top:12px;"
+                >
             </div>
           </div>
         </div>
