@@ -1,0 +1,53 @@
+/* LIBRARY LOCAL: Loading GIF */
+
+#page-loader {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+#page-loader.hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-content {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.loader-gif {
+  width: 180px;
+  image-rendering: pixelated;
+}
+
+.loader-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #191919;
+  letter-spacing: 2px;
+
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,53 @@
+/* LIBRARY LOCAL: untuk animasi hover/milih menu di sidebar */
+
+.sidenav .nav-link {
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease;
+  z-index: 1;
+}
+
+.sidenav .nav-link::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(195deg, #42424a, #191919);
+  transition: width 0.3s ease;
+  z-index: -1;
+  border-radius: 0.5rem;
+}
+
+.sidenav .nav-link:hover::before {
+  width: 100%;
+}
+
+.sidenav .nav-link:hover {
+  color: white !important;
+}
+
+.sidenav .nav-link.active::before {
+  width: 100%;
+}
+
+.sidenav .nav-link.active {
+  color: white !important;
+}
+
+/* Icon bawaan Google Material Symbols */
+.sidenav .nav-link:hover i,
+.sidenav .nav-link.active i {
+  color: white !important;
+}
+
+/* Icon PNG custom */
+.sidenav .nav-link img {
+  transition: filter 0.3s ease;
+}
+
+.sidenav .nav-link:hover img,
+.sidenav .nav-link.active img {
+  filter: brightness(0) invert(1);
+}
