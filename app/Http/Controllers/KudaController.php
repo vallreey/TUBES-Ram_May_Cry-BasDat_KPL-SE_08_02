@@ -3,41 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Kuda;
 
 class KudaController extends Controller
 {
     public function index()
     {
-        return view('admin.dashboard'); // sementara arahkan ke dashboard dulu
+        $kuda = Kuda::all(); // Ambil semua data kuda
+        return view('kuda.index', compact('kuda'));
     }
 
     public function create()
     {
-        return view('admin.dashboard');
+        return view('kuda.create');
     }
 
     public function store(Request $request)
     {
-        //
-    }
-
-    public function show($id)
-    {
-        return view('admin.dashboard');
+        Kuda::create($request->all());
+        return redirect()->route('kuda.index');
     }
 
     public function edit($id)
     {
-        return view('admin.dashboard');
+        $kuda = Kuda::findOrFail($id);
+        return view('kuda.edit', compact('kuda'));
     }
 
     public function update(Request $request, $id)
     {
-        //
+        $kuda = Kuda::findOrFail($id);
+        $kuda->update($request->all());
+        return redirect()->route('kuda.index');
     }
 
     public function destroy($id)
     {
-        //
+        $kuda = Kuda::findOrFail($id);
+        $kuda->delete();
+        return redirect()->route('kuda.index');
     }
 }
