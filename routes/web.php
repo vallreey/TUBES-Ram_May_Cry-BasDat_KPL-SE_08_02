@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KudaController;
 use App\Http\Controllers\PeternakanController;
@@ -9,23 +10,30 @@ use App\Http\Controllers\KawinSilangController;
 use App\Http\Controllers\LisensiController;
 use App\Http\Controllers\UserController;
 
-// Redirect root ke dashboard
-Route::get('/', fn() => redirect()->route('dashboard'));
+// -------------------------------------------------------
+// Auth (tidak perlu login)
+// -------------------------------------------------------
+Route::middleware('guest')->group(function () {
+    Route::get('/login',    [AuthController::class, 'loginForm'])->name('login');
+    Route::post('/login',   [AuthController::class, 'login'])->name('login.post');
+    Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
+    Route::post('/register',[AuthController::class, 'register'])->name('register.post');
+});
 
-// Dashboard
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Resource routes (CRUD otomatis: index, create, store, show, edit, update, destroy)
-Route::resource('kuda',         KudaController::class);
-Route::resource('peternakan',   PeternakanController::class);
-Route::resource('transaksi',    TransaksiController::class);
-Route::resource('kawin-silang', KawinSilangController::class);
-Route::resource('lisensi',      LisensiController::class);
-Route::resource('users',        UserController::class);
+// -------------------------------------------------------
+// Halaman yang butuh login
+// -------------------------------------------------------
+Route::middleware('auth')->group(function () {
+    Route::get('/', fn() => redirect()->route('dashboard'));
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile',   fn() => view('admin.dashboard'))->name('profile');
 
-// Profile
-Route::get('/profile', fn() => view('admin.dashboard'))->name('profile');
-
-// Auth placeholder
-Route::get('/login',   fn() => view('welcome'))->name('login');
-Route::post('/logout', fn() => redirect('/'))->name('logout');
+    Route::resource('kuda',         KudaController::class);
+    Route::resource('peternakan',   PeternakanController::class);
+    Route::resource('transaksi',    TransaksiController::class);
+    Route::resource('kawin-silang', KawinSilangController::class);
+    Route::resource('lisensi',      LisensiController::class);
+    Route::resource('users',        UserController::class);
+});
