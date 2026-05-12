@@ -1,3 +1,5 @@
+<!-- LIBRARY LOCAL untuk sidebar -->
+
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2" id="sidenav-main">
   <div class="sidenav-header">
     <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
@@ -13,58 +15,92 @@
     <ul class="navbar-nav">
 
       {{-- Dashboard --}}
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('dashboard') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('dashboard') }}">
-          <i class="material-symbols-rounded opacity-5">dashboard</i>
-          <span class="nav-link-text ms-1">Dashboard</span>
+            href="{{ route('dashboard') }}">
+
+            <i class="material-symbols-rounded {{ request()->routeIs('dashboard') ? 'text-white' : 'text-dark' }}">
+            dashboard
+            </i>
+
+            <span class="nav-link-text ms-1">Dashboard</span>
         </a>
-      </li>
+        </li>
 
       {{-- Kuda --}}
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('kuda.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('kuda.index') }}">
-          <i class="material-symbols-rounded opacity-5">pets</i>
-          <span class="nav-link-text ms-1">Data Kuda</span>
+            href="{{ route('kuda.index') }}">
+
+            <img
+            src="{{ asset(
+                request()->routeIs('kuda.*')
+                ? 'material/img/sendiri/horseshoe_putih.png'
+                : 'material/img/sendiri/horseshoe_hitam.png'
+            ) }}"
+            style="width:15px; height:15px;"
+            >
+
+            <span class="nav-link-text ms-1">Data Kuda</span>
         </a>
-      </li>
+        </li>
 
       {{-- Peternakan --}}
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('peternakan.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('peternakan.index') }}">
-          <i class="material-symbols-rounded opacity-5">home</i>
-          <span class="nav-link-text ms-1">Peternakan</span>
+            href="{{ route('peternakan.index') }}">
+
+            <i class="material-symbols-rounded {{ request()->routeIs('peternakan.*') ? 'text-white' : 'text-dark' }}">
+            home
+            </i>
+
+            <span class="nav-link-text ms-1">Peternakan</span>
         </a>
-      </li>
+        </li>
 
       {{-- Transaksi --}}
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('transaksi.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('transaksi.index') }}">
-          <i class="material-symbols-rounded opacity-5">receipt_long</i>
-          <span class="nav-link-text ms-1">Transaksi</span>
+            href="{{ route('transaksi.index') }}">
+
+            <i class="material-symbols-rounded {{ request()->routeIs('transaksi.*') ? 'text-white' : 'text-dark' }}">
+            receipt_long
+            </i>
+
+            <span class="nav-link-text ms-1">Transaksi</span>
         </a>
-      </li>
+        </li>
 
       {{-- Kawin Silang --}}
-      <li class="nav-item">
-        <a class="nav-link {{ request()->routeIs('kawin-silang.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('kawin-silang.index') }}">
-          <i class="material-symbols-rounded opacity-5">join</i>
-          <span class="nav-link-text ms-1">Kawin Silang</span>
-        </a>
-      </li>
+    <li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('kawin-silang.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
+        href="{{ route('kawin-silang.index') }}">
+
+        <img
+        src="{{ asset(
+            request()->routeIs('kawin-silang.*')
+            ? 'material/img/sendiri/Gender_putih.png'
+            : 'material/img/sendiri/Gender_hitam.png'
+        ) }}"
+        style="width:15px; height:15px;"
+        >
+
+        <span class="nav-link-text ms-1">Kawin Silang</span>
+    </a>
+    </li>
 
       {{-- Lisensi --}}
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('lisensi.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
-          href="{{ route('lisensi.index') }}">
-          <i class="material-symbols-rounded opacity-5">verified</i>
-          <span class="nav-link-text ms-1">Lisensi</span>
+            href="{{ route('lisensi.index') }}">
+
+            <i class="material-symbols-rounded {{ request()->routeIs('lisensi.*') ? 'text-white' : 'text-dark' }}">
+            verified
+            </i>
+
+            <span class="nav-link-text ms-1">Lisensi</span>
         </a>
-      </li>
+        </li>
 
       <hr class="horizontal dark my-2">
 

@@ -2,42 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Peternakan;
 
 class PeternakanController extends Controller
 {
     public function index()
     {
-        return view('admin.dashboard'); // sementara arahkan ke dashboard dulu
-    }
+        $peternakan = Peternakan::with([
+            'user',
+            'kuda',
+            'kuda.lisensi'
+        ])
+        ->latest()
+        ->get();
 
-    public function create()
-    {
-        return view('admin.dashboard');
-    }
-
-    public function store(Request $request)
-    {
-        //
-    }
-
-    public function show($id)
-    {
-        return view('admin.dashboard');
-    }
-
-    public function edit($id)
-    {
-        return view('admin.dashboard');
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
-    {
-        //
+        return view('admin.peternakan.index', compact('peternakan'));
     }
 }

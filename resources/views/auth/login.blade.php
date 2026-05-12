@@ -5,11 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="icon" type="image/png" href="{{ asset('material/img/favicon.png') }}">
   <title>Login | Ram May Cry</title>
+
+  <!-- Google Fonts Library -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
+  <!-- Nucleo Icons Library -->
   <link href="{{ asset('material/css/nucleo-icons.css') }}" rel="stylesheet" />
+
+  <!-- Nucleo SVG Icons Library -->
   <link href="{{ asset('material/css/nucleo-svg.css') }}" rel="stylesheet" />
+
+  <!-- Font Awesome Icon Library -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+
+  <!-- Google Material Symbols Icon Library -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Material Dashboard CSS Library -->
   <link id="pagestyle" href="{{ asset('material/css/material-dashboard.css') }}" rel="stylesheet" />
 </head>
 
@@ -98,8 +109,8 @@
     </div>
   </main>
 
-  <script src="{{ asset('material/js/core/popper.min.js') }}"></script>
-  <script src="{{ asset('material/js/core/bootstrap.min.js') }}"></script>
-  <script src="{{ asset('material/js/material-dashboard.min.js') }}"></script>
+  <script src="{{ asset('material/js/core/popper.min.js') }}"></script> <!-- Library Bootstrap di public\material\js-->
+  <script src="{{ asset('material/js/core/bootstrap.min.js') }}"></script> <!-- Library Bootstrap di public\material\js-->
+  <script src="{{ asset('material/js/material-dashboard.min.js') }}"></script> <!-- Library Bootstrap di public\material\js-->
 </body>
 </html>
