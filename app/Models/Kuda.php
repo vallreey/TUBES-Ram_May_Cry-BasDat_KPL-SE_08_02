@@ -66,4 +66,10 @@ class Kuda extends Model
             'id_kuda'
         );
     }
+
+    const STATUS_JUAL = [
+        'tersedia',
+        'terjual',
+        'breeding',
+    ];
 }

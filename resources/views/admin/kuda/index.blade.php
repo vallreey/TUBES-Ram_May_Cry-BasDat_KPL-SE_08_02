@@ -23,17 +23,17 @@
                             Kuda Dimiliki
                         </a>
 
-                        <a href="{{ route('kuda.tersedia') }}"
+                        <a href="{{ route('kuda.filterStatus', 'tersedia') }}"
                            class="btn btn-sm {{ $page === 'tersedia' ? 'bg-gradient-success text-white' : 'btn-outline-success' }}">
                             Kuda Tersedia
                         </a>
 
-                        <a href="{{ route('kuda.terjual') }}"
+                        <a href="{{ route('kuda.filterStatus', 'terjual') }}"
                            class="btn btn-sm {{ $page === 'terjual' ? 'bg-gradient-danger text-white' : 'btn-outline-danger' }}">
                             Kuda Terjual
                         </a>
 
-                        <a href="{{ route('kuda.breeding') }}"
+                        <a href="{{ route('kuda.filterStatus', 'breeding') }}"
                            class="btn btn-sm {{ $page === 'breeding' ? 'bg-gradient-info text-white' : 'btn-outline-info' }}">
                             Breeding
                         </a>

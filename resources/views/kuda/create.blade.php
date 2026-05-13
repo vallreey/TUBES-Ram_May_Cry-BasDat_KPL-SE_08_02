@@ -81,6 +81,19 @@
             </button>
           </div>
 
+          @php
+          $statusBadge = [
+              'pending' => 'warning',
+              'dibayar' => 'primary',
+              'selesai' => 'success',
+              'dibatalkan' => 'danger',
+          ];
+          @endphp
+
+          <span class="badge bg-{{ $statusBadge[$transaksi->status] }}">
+            {{ $transaksi->status }}
+          </span>
+
         </form>
       </div>
     </div>

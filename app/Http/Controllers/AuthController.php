@@ -54,7 +54,7 @@ class AuthController extends Controller
             'email'        => 'required|email|unique:users,email',
             'no_telp'      => 'nullable|string|max:15',
             'alamat'       => 'nullable|string',
-            'role'         => 'required|in:pembeli,peternak',
+            'role' => 'required|in:' . implode(',', User::ROLES),
             'password'     => 'required|min:8|confirmed',
         ], [
             'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
@@ -87,10 +87,19 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+
     public function testApi()
-{
-    return response()->json([
-        'message' => 'API berhasil jalan'
-    ]);
-}
+    {
+        return $this->apiResponse(
+            'API berhasil jalan'
+        );
+    }
+
+    private function apiResponse($message, $data = null)
+    {
+        return response()->json([
+            'message' => $message,
+            'data' => $data
+        ]);
+    }
 }

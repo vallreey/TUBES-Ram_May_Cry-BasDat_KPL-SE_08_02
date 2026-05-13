@@ -25,6 +25,12 @@ class User extends Authenticatable
 
     protected $primaryKey = 'id_user';
 
+    const ROLES = [
+        'admin',
+        'peternak',
+        'pembeli',
+    ];
+
     protected function casts(): array
     {
         return [

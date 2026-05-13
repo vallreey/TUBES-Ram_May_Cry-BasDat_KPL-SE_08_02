@@ -30,12 +30,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/', fn() => redirect()->route('dashboard'));
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile',   fn() => view('admin.dashboard'))->name('profile');
-    Route::get('/kuda/tersedia', [KudaController::class, 'tersedia'])->name('kuda.tersedia');
-    Route::get('/kuda/terjual', [KudaController::class, 'terjual'])->name('kuda.terjual');
-    Route::get('/kuda/breeding', [KudaController::class, 'breeding'])->name('kuda.breeding');
     Route::get('/kuda/create', [KudaController::class, 'create'])->name('kuda.create');
-
-    Route::resource('kuda', KudaController::class);
+    Route::get(
+        '/kuda/status/{status}',
+        [KudaController::class, 'filterStatus']
+    )->name('kuda.filterStatus');
+    
+    Route::resource('kuda', KudaController::class)
+        ->except(['show']);
     Route::resource('peternakan',   PeternakanController::class);
     Route::resource('transaksi',    TransaksiController::class);
     Route::resource('kawin-silang', KawinSilangController::class);

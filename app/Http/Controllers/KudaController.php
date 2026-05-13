@@ -35,40 +35,21 @@ class KudaController extends Controller
         return view('admin.kuda.index', compact('kuda', 'page'));
     }
 
-    public function tersedia()
+    public function filterStatus($status)
     {
+        if (!in_array($status, Kuda::STATUS_JUAL)) {
+            abort(404);
+        }
+    
         $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', 'tersedia')
+            ->where('status_jual', $status)
             ->latest()
             ->get();
 
-        $page = 'tersedia';
-
-        return view('admin.kuda.index', compact('kuda', 'page'));
-    }
-
-    public function terjual()
-    {
-        $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', 'terjual')
-            ->latest()
-            ->get();
-
-        $page = 'terjual';
-
-        return view('admin.kuda.index', compact('kuda', 'page'));
-    }
-
-    public function breeding()
-    {
-        $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', 'breeding')
-            ->latest()
-            ->get();
-
-        $page = 'breeding';
-
-        return view('admin.kuda.index', compact('kuda', 'page'));
+        return view('admin.kuda.index', [
+            'kuda' => $kuda,
+            'page' => $status
+        ]);
     }
 
     public function create()
@@ -86,7 +67,7 @@ class KudaController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->role === 'pembeli') {
+        if ($this->cannotManageHorse($user)) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda.');
@@ -110,9 +91,10 @@ class KudaController extends Controller
             'id_ayah'       => $request->id_ayah,
         ]);
 
-        return redirect()
-            ->route('kuda.index')
-            ->with('success', 'Data kuda berhasil ditambahkan.');
+        return $this->redirectWithMessage(
+            'success',
+            'Data berhasil ditambahkan'
+        );
     }
 
     public function edit($id)
@@ -121,7 +103,7 @@ class KudaController extends Controller
 
         $kuda = Kuda::with('peternakan')->findOrFail($id);
 
-        if ($user->role === 'pembeli') {
+        if ($this->cannotManageHorse($user)) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Pembeli tidak bisa mengedit data kuda.');
@@ -149,7 +131,7 @@ class KudaController extends Controller
 
         $kuda = Kuda::with('peternakan')->findOrFail($id);
 
-        if ($user->role === 'pembeli') {
+        if ($this->cannotManageHorse($user)) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Pembeli tidak bisa mengubah data kuda.');
@@ -181,7 +163,7 @@ class KudaController extends Controller
 
         $kuda = Kuda::with('peternakan')->findOrFail($id);
 
-        if ($user->role === 'pembeli') {
+        if ($this->cannotManageHorse($user)) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Pembeli tidak bisa menghapus data kuda.');
@@ -205,5 +187,17 @@ class KudaController extends Controller
         return redirect()
             ->route('kuda.index')
             ->with('success', 'Data kuda berhasil dihapus.');
+    }
+
+    private function redirectWithMessage($type, $message)
+    {
+        return redirect()
+            ->route('kuda.index')
+            ->with($type, $message);
+    }
+
+    private function cannotManageHorse($user)
+    {
+        return $user->role === 'pembeli';
     }
 }
