@@ -18,14 +18,26 @@
           @method('PUT')
 
           <label class="form-label">Nama Kuda</label>
-          <div class="input-group input-group-outline mb-3">
+          @if($bolehEditNama || auth()->user()->role !== 'pembeli')
+
             <input type="text"
-                   name="nama_kuda"
-                   class="form-control"
-                   placeholder="Nama Kuda"
-                   value="{{ old('nama_kuda', $kuda->nama_kuda) }}"
-                   required>
-          </div>
+            name="nama_kuda"
+            class="form-control"
+            value="{{ old('nama_kuda', $kuda->nama_kuda) }}"
+            required>
+
+            @else
+
+                <input type="text"
+                    class="form-control"
+                    value="{{ $kuda->nama_kuda }}"
+                    disabled>
+
+                <small class="text-danger">
+                    Anda membutuhkan lisensi untuk mengubah nama kuda.
+                </small>
+
+            @endif
 
           <label class="form-label">Jenis Kuda</label>
           <div class="input-group input-group-outline mb-3">

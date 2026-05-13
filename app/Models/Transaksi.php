@@ -10,13 +10,19 @@ class Transaksi extends Model
     protected $primaryKey = 'id_transaksi';
 
     protected $fillable = [
-        'status_transaksi',
-        'tgl_transaksi',
-        'harga_final',
-        'id_kuda',
-        'id_pembeli',
-        'id_penjual',
+    'status_transaksi',
+    'tgl_transaksi',
+    'harga_final',
+    'id_kuda',
+    'id_lisensi',
+    'id_pembeli',
+    'id_penjual',
     ];
+
+    public function lisensi()
+    {
+    return $this->belongsTo(Lisensi::class, 'id_lisensi', 'id_lisensi');
+    }
 
     public function kuda()
     {

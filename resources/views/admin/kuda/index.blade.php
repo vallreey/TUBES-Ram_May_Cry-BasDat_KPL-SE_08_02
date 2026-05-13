@@ -119,42 +119,73 @@
                                             View Detail
                                         </button>
                                         @php
-                                        $bolehKelola = false;
+                                        $user = auth()->user();
 
-                                        if (auth()->user()->role === 'admin') {
+                                        $bolehKelola = false;
+                                        $bolehEditNamaPembeli = false;
+
+                                        // Admin boleh edit/hapus semua
+                                        if ($user->role === 'admin') {
                                             $bolehKelola = true;
                                         }
 
+                                        // Peternak hanya boleh edit/hapus kuda miliknya dan belum terjual
                                         elseif (
-                                            auth()->user()->role === 'peternak'
+                                            $user->role === 'peternak'
                                             && $item->peternakan
-                                            && $item->peternakan->id_user === auth()->user()->id_user
+                                            && $item->peternakan->id_user === $user->id_user
                                             && $item->status_jual !== 'terjual'
                                         ) {
                                             $bolehKelola = true;
                                         }
+
+                                        // Pembeli hanya boleh edit nama jika transaksi selesai dan tanpa lisensi
+                                        elseif ($user->role === 'pembeli') {
+                                        $transaksiPembeli = $item->transaksi
+                                            ->where('id_pembeli', $user->id_user)
+                                            ->where('status_transaksi', 'selesai')
+                                            ->first();
+
+                                        if ($transaksiPembeli) {
+
+                                            // 1. Kuda dari awal tidak punya lisensi
+                                            if (!$item->lisensi) {
+                                                $bolehEditNamaPembeli = true;
+                                            }
+
+                                            // 2. Kuda punya lisensi dan pembeli membeli lisensinya
+                                            elseif ($item->lisensi && $transaksiPembeli->id_lisensi !== null) {
+                                                $bolehEditNamaPembeli = true;
+                                            }
+
+                                            // 3. Kuda punya lisensi tapi pembeli beli tanpa lisensi
+                                            else {
+                                                $bolehEditNamaPembeli = false;
+                                            }
+                                        }
+                                    }
                                     @endphp
 
-                                    @if($bolehKelola)
-                                        <a href="{{ route('kuda.edit', $item->id_kuda) }}"
-                                        class="btn btn-sm btn-light mb-0">
-                                            Edit
-                                        </a>
+                                @if($bolehKelola)
+                                <a href="{{ route('kuda.edit', $item->id_kuda) }}"
+                                class="btn btn-sm btn-light mb-0">
+                                    Edit
+                                </a>
 
-                                        <form action="{{ route('kuda.destroy', $item->id_kuda) }}"
-                                            method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
+                                <button type="button"
+                                        class="btn btn-sm bg-gradient-danger mb-0"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#hapusKuda{{ $item->id_kuda }}">
+                                    Hapus
+                                </button>
+                            @endif
 
-                                            <button type="button"
-                                                class="btn btn-sm bg-gradient-danger mb-0"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#hapusKuda{{ $item->id_kuda }}">
-                                            Hapus
-                                        </button>
-                                        </form>
-                                    @endif
+                            @if($bolehEditNamaPembeli)
+                                <a href="{{ route('kuda.edit', $item->id_kuda) }}"
+                                class="btn btn-sm bg-gradient-info mb-0">
+                                    Edit Nama
+                                </a>
+                            @endif
                                     </td>
                                 </tr>
                             @empty
@@ -189,6 +220,7 @@
                 </div>
 
                 <div class="modal-body">
+
                     <h6>Informasi Kuda</h6>
 
                     <p class="text-sm mb-1"><strong>Nama:</strong> {{ $item->nama_kuda }}</p>
@@ -211,6 +243,40 @@
                     @else
                         <p class="text-sm text-secondary">Lisensi belum tersedia.</p>
                     @endif
+
+                    @if(auth()->user()->role === 'pembeli' && $page === 'tersedia' && $item->status_jual === 'tersedia')
+
+                    <hr>
+
+                    <h6>Pembelian Kuda</h6>
+
+                    <form action="{{ route('transaksi.store') }}" method="POST">
+                        @csrf
+
+                        <input type="hidden" name="id_kuda" value="{{ $item->id_kuda }}">
+
+                        @if($item->lisensi)
+
+    <label class="form-label">Pilihan Pembelian</label>
+
+    <select name="pakai_lisensi" class="form-control" required>
+        <option value="">Pilih Opsi Pembelian</option>
+        <option value="1">Beli dengan lisensi</option>
+        <option value="0">Beli tanpa lisensi</option>
+    </select>
+
+@else
+
+    <input type="hidden" name="pakai_lisensi" value="0">
+
+@endif
+
+                        <button type="submit" class="btn bg-gradient-success">
+                            Ajukan Pembelian
+                        </button>
+                    </form>
+
+                @endif
                 </div>
 
                 <div class="modal-footer">
