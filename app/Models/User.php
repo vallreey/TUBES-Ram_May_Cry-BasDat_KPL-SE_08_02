@@ -24,20 +24,6 @@ use Illuminate\Notifications\Notifiable;
     'remember_token'
 ])]
 
-#[Fillable([
-    'nama_lengkap',
-    'email',
-    'password',
-    'no_telp',
-    'alamat',
-    'role'
-])]
-
-#[Hidden([
-    'password',
-    'remember_token'
-])]
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
