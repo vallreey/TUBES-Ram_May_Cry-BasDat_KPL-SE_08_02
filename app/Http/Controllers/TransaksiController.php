@@ -8,13 +8,14 @@ use Illuminate\Http\Request;
 class TransaksiController extends Controller
 {
     public function index()
-{
+    {
     $user = auth()->user();
 
     $query = Transaksi::with([
         'kuda',
         'pembeli',
-        'penjual'
+        'penjual',
+        'lisensi'
     ])->latest();
 
     // ADMIN bisa melihat semua transaksi
@@ -42,7 +43,7 @@ class TransaksiController extends Controller
     }
 
     return view('admin.transaksi.index', compact('transaksi'));
-}
+    }
 
     public function create()
     {
@@ -51,7 +52,38 @@ class TransaksiController extends Controller
 
     public function store(Request $request)
     {
-        //
+    $user = auth()->user();
+
+    if ($user->role !== 'pembeli') {
+        return back()->with('error', 'Hanya pembeli yang bisa membeli kuda.');
+    }
+
+    $kuda = \App\Models\Kuda::with(['peternakan', 'lisensi'])
+        ->findOrFail($request->id_kuda);
+
+    if ($kuda->status_jual !== 'tersedia') {
+        return back()->with('error', 'Kuda ini sudah tidak tersedia.');
+    }
+
+    $idLisensi = null;
+
+    if ($request->pakai_lisensi == 1 && $kuda->lisensi) {
+        $idLisensi = $kuda->lisensi->id_lisensi;
+    }
+
+    \App\Models\Transaksi::create([
+        'status_transaksi' => 'pending',
+        'tgl_transaksi'    => now(),
+        'harga_final'      => $kuda->harga_buka,
+        'id_kuda'          => $kuda->id_kuda,
+        'id_lisensi'       => $idLisensi,
+        'id_pembeli'       => $user->id_user,
+        'id_penjual'       => $kuda->peternakan->id_user,
+    ]);
+
+    return redirect()
+        ->route('transaksi.index')
+        ->with('success', 'Pengajuan pembelian berhasil dikirim ke penjual.');
     }
 
     public function show($id)
@@ -66,7 +98,44 @@ class TransaksiController extends Controller
 
     public function update(Request $request, $id)
     {
-        //
+    $user = auth()->user();
+
+    $transaksi = Transaksi::with('kuda')->findOrFail($id);
+
+    if (
+        $user->role !== 'peternak'
+        || $transaksi->id_penjual !== $user->id_user
+    ) {
+        return redirect()
+            ->back()
+            ->with('error', 'Anda tidak memiliki akses untuk transaksi ini.');
+    }
+
+    if ($transaksi->status_transaksi !== 'pending') {
+        return redirect()
+            ->back()
+            ->with('error', 'Transaksi ini sudah diproses.');
+    }
+
+    if ($request->aksi === 'terima') {
+        $transaksi->update([
+            'status_transaksi' => 'selesai',
+        ]);
+
+        $transaksi->kuda->update([
+            'status_jual' => 'terjual',
+        ]);
+    }
+
+    if ($request->aksi === 'tolak') {
+        $transaksi->update([
+            'status_transaksi' => 'dibatalkan',
+        ]);
+    }
+
+    return redirect()
+        ->back()
+        ->with('success', 'Status transaksi berhasil diperbarui.');
     }
 
     public function destroy($id)
