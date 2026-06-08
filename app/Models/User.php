@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -18,14 +17,13 @@ use Illuminate\Notifications\Notifiable;
     'alamat',
     'role'
 ])]
-
 #[Hidden([
     'password',
     'remember_token'
 ])]
-
 class User extends Authenticatable
 {
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     protected $table = 'users';
@@ -44,7 +42,23 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function peternakan()
+    {
+        return $this->hasOne(Peternakan::class, 'id_user', 'id_user');
+    }
+
+    public function kudaDibeli()
+    {
+        return $this->hasMany(Transaksi::class, 'id_pembeli', 'id_user');
+    }
+
+    public function kudaDijual()
+    {
+        return $this->hasMany(Transaksi::class, 'id_penjual', 'id_user');
     }
 }
