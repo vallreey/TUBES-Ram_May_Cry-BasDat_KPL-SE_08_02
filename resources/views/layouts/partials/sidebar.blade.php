@@ -5,8 +5,15 @@
     <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
       aria-hidden="true" id="iconSidenav"></i>
     <a class="navbar-brand px-4 py-3 m-0" href="{{ route('dashboard') }}">
-      <img src="{{ asset('material/img/logo-ct-dark.png') }}" class="navbar-brand-img" width="26" height="26" alt="logo">
-      <span class="ms-1 text-sm text-dark font-weight-bold">Ram May Cry</span>
+    <img src="{{ asset('material/img/sendiri/logo_app_black.png') }}"
+         class="navbar-brand-img"
+         width="26"
+         height="26"
+         alt="logo">
+
+    <span class="ms-1 text-sm text-dark font-weight-bold">
+        OreNoAiba
+    </span>
     </a>
   </div>
   <hr class="horizontal dark mt-0 mb-2">
@@ -124,7 +131,7 @@
   <div class="sidenav-footer position-absolute w-100 bottom-0">
     <div class="mx-3">
       @auth
-        <a class="btn btn-outline-dark mt-4 w-100" href="{{ route('profile') }}">
+        <a class="btn btn-outline-dark mt-4 w-100 {{ request()->routeIs('profile*') ? 'active' : '' }}" href="{{ route('profile') }}">
           <i class="material-symbols-rounded me-2">account_circle</i>
           {{ auth()->user()->nama_lengkap }}
         </a>
