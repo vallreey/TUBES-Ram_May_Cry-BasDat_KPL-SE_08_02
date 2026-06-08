@@ -23,6 +23,8 @@ class User extends Authenticatable
      * @return array<string, string>
      */
 
+    protected $table = 'users';
+
     protected $primaryKey = 'id_user';
 
     protected function casts(): array
@@ -40,4 +42,19 @@ class User extends Authenticatable
     'role',
     'password',
     ];
+
+    public function peternakan()
+    {
+        return $this->hasOne(Peternakan::class, 'id_user', 'id_user');
+    }
+
+    public function kudaDibeli()
+    {
+        return $this->hasMany(Transaksi::class, 'id_pembeli', 'id_user');
+    }
+
+    public function kudaDijual()
+    {
+        return $this->hasMany(Transaksi::class, 'id_penjual', 'id_user');
+    }
 }
