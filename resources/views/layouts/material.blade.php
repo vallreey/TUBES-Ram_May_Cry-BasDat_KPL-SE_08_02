@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('material/img/apple-icon.png') }}">
-  <link rel="icon" type="image/png" href="{{ asset('material/img/favicon.png') }}">
-  <title>@yield('title', 'Ram May Cry') | Sistem Informasi Kuda</title>
+  <link rel="icon" type="image/png" href="{{ asset('material/img/sendiri/logo_app_white_bg.png') }}">
+  <title>@yield('title', 'Sistem Informasi Kuda')</title>
 
   {{-- Fonts & Icons --}}
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
