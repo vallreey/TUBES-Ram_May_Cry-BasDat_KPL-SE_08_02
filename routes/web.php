@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/kuda/terjual', [KudaController::class, 'terjual'])->name('kuda.terjual');
     Route::get('/kuda/breeding', [KudaController::class, 'breeding'])->name('kuda.breeding');
     Route::get('/kuda/create', [KudaController::class, 'create'])->name('kuda.create');
+    Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+    Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
     Route::resource('kuda', KudaController::class);
     Route::resource('peternakan',   PeternakanController::class);

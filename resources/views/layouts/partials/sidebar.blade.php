@@ -131,7 +131,7 @@
   <div class="sidenav-footer position-absolute w-100 bottom-0">
     <div class="mx-3">
       @auth
-        <a class="btn btn-outline-dark mt-4 w-100" href="{{ route('profile') }}">
+        <a class="btn btn-outline-dark mt-4 w-100 {{ request()->routeIs('profile*') ? 'active' : '' }}" href="{{ route('profile') }}">
           <i class="material-symbols-rounded me-2">account_circle</i>
           {{ auth()->user()->nama_lengkap }}
         </a>
