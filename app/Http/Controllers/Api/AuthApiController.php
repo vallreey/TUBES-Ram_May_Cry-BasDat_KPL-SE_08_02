@@ -21,10 +21,10 @@ class AuthApiController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'no_telp' => 'nullable|string|max:15',
                 'alamat' => 'nullable|string',
-                'role' => 'required|in:admin,pembeli,peternak',
+                'role' => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
                 'password' => 'required|min:8|confirmed',
-                'nama_peternakan' => 'required_if:role,peternak|nullable|string|max:100',
-                'kapasitas_kandang' => 'required_if:role,peternak|nullable|integer|min:0',
+                'nama_peternakan' => 'required_if:role,' . User::ROLE_PETERNAK . '|nullable|string|max:100',
+                'kapasitas_kandang' => 'required_if:role,' . User::ROLE_PETERNAK . '|nullable|integer|min:0',
                 'lokasi_map' => 'nullable|string|max:255',
                 'alamat_lengkap' => 'nullable|string',
             ]);
@@ -41,7 +41,7 @@ class AuthApiController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        if ($user->role === 'peternak') {
+        if ($user->role === User::ROLE_PETERNAK) {
             Peternakan::create([
                 'nama_peternakan' => $validated['nama_peternakan'],
                 'kapasitas_kandang' => $validated['kapasitas_kandang'],

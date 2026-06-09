@@ -38,7 +38,7 @@ class UserApiController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'no_telp' => 'nullable|string|max:15',
                 'alamat' => 'nullable|string',
-                'role' => 'required|in:admin,pembeli,peternak',
+                'role' => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
                 'password' => 'required|string|min:8',
             ]);
         } catch (ValidationException $e) {
@@ -66,7 +66,7 @@ class UserApiController extends Controller
                 'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($user->id_user, 'id_user')],
                 'no_telp' => 'nullable|string|max:15',
                 'alamat' => 'nullable|string',
-                'role' => 'sometimes|required|in:admin,pembeli,peternak',
+                'role' => 'sometimes|required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
                 'password' => 'nullable|string|min:8',
             ]);
         } catch (ValidationException $e) {

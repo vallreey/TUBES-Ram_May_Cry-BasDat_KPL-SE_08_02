@@ -39,8 +39,7 @@ class KudaApiController extends Controller
 
     public function show($id)
     {
-        $kuda = Kuda::with(['peternakan.user', 'lisensi', 'ibu', 'ayah', 'transaksi'])
-            ->find($id);
+        $kuda = Kuda::with(['peternakan.user', 'lisensi', 'ibu', 'ayah', 'transaksi'])->find($id);
 
         if (!$kuda) {
             return $this->errorResponse('Kuda tidak ditemukan', 404);
@@ -55,7 +54,7 @@ class KudaApiController extends Controller
             $validated = $request->validate([
                 'nama_kuda' => 'required|string|max:100',
                 'jenis_kuda' => 'required|string|max:100',
-                'status_jual' => 'required|in:tersedia,terjual,breeding',
+                'status_jual' => 'required|in:' . Kuda::STATUS_TERSEDIA . ',' . Kuda::STATUS_TERJUAL . ',' . Kuda::STATUS_BREEDING,
                 'harga_buka' => 'required|numeric|min:0',
                 'id_peternakan' => 'required|exists:peternakan,id_peternakan',
                 'id_ibu' => 'nullable|exists:kuda,id_kuda',
@@ -86,7 +85,7 @@ class KudaApiController extends Controller
             $validated = $request->validate([
                 'nama_kuda' => 'sometimes|required|string|max:100',
                 'jenis_kuda' => 'sometimes|required|string|max:100',
-                'status_jual' => ['sometimes', 'required', Rule::in(['tersedia', 'terjual', 'breeding'])],
+                'status_jual' => ['sometimes', 'required', Rule::in([Kuda::STATUS_TERSEDIA, Kuda::STATUS_TERJUAL, Kuda::STATUS_BREEDING])],
                 'harga_buka' => 'sometimes|required|numeric|min:0',
                 'id_peternakan' => 'sometimes|required|exists:peternakan,id_peternakan',
                 'id_ibu' => 'nullable|exists:kuda,id_kuda',
