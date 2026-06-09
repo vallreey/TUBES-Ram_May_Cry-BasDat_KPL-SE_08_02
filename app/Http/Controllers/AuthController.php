@@ -50,11 +50,11 @@ class AuthController extends Controller
 
         $role = $request->query('role');
 
-        if ($role === 'pembeli') {
+        if ($role === User::ROLE_PEMBELI) {
             return view('auth.register-pembeli');
         }
 
-        if ($role === 'peternak') {
+        if ($role === User::ROLE_PETERNAK) {
             return view('auth.register-peternak');
         }
 
@@ -70,7 +70,8 @@ class AuthController extends Controller
             'email'        => 'required|email|unique:users,email',
             'no_telp'      => 'nullable|string|max:15',
             'alamat'       => 'nullable|string',
-            'role'         => 'required|in:pembeli,peternak',
+            // Parameterisasi di validasi
+            'role'         => 'required|in:' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
             'password'     => 'required|min:8|confirmed',
         ];
 
@@ -85,7 +86,7 @@ class AuthController extends Controller
         ];
 
         // Tambah validasi data peternakan jika role peternak
-        if ($request->input('role') === 'peternak') {
+        if ($request->input('role') === User::ROLE_PETERNAK) {
             $rules['nama_peternakan']  = 'required|string|max:100';
             $rules['kapasitas_kandang'] = 'required|integer|min:0';
             $rules['lokasi_map']       = 'nullable|string|max:255';
@@ -109,7 +110,7 @@ class AuthController extends Controller
         ]);
 
         // Jika peternak, buat data peternakan sekaligus
-        if ($request->role === 'peternak') {
+        if ($request->role === User::ROLE_PETERNAK) {
             Peternakan::create([
                 'nama_peternakan'  => $request->nama_peternakan,
                 'kapasitas_kandang' => $request->kapasitas_kandang,
