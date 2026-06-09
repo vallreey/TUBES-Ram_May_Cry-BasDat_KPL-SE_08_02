@@ -11,80 +11,31 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Mengambil user yang sedang login
         $user = auth()->user();
 
-    if ($user->role === 'admin') {
+        // Mengambil total kuda berdasarkan role user
+        $totalKuda = $this->getTotalKudaByRole($user);
 
-        $totalKuda = Kuda::count();
-    }
+        // Mengambil total transaksi berdasarkan role user
+        $totalTransaksi = $this->getTotalTransaksiByRole($user);
 
-    elseif ($user->role === 'peternak') {
+        // Mengambil total data breeding
+        $totalBreeding = KawinSilang::count();
 
-        $totalKuda = Kuda::whereHas('peternakan', function ($q) use ($user) {
-            $q->where('id_user', $user->id_user);
-        })->count();
-    }
-
-    elseif ($user->role === 'pembeli') {
-
-        $totalKuda = Kuda::whereHas('transaksi', function ($q) use ($user) {
-            $q->where('id_pembeli', $user->id_user)
-            ->where('status_transaksi', 'selesai');
-        })->count();
-    }
-
-    else {
-
-        $totalKuda = 0;
-    }
-        $totalBreeding   = KawinSilang::count();
+        // Mengambil total data peternakan
         $totalPeternakan = Peternakan::count();
 
-        $queryTransaksi = Transaksi::with([
-            'kuda',
-            'pembeli',
-            'penjual'
-        ])->latest();
+        // Mengambil transaksi terbaru berdasarkan role user
+        $transaksiTerbaru = $this->getTransaksiTerbaruByRole($user);
 
-        // ADMIN melihat semua transaksi
-        if ($user->role === 'admin') {
-            $totalTransaksi = Transaksi::count();
-
-            $transaksiTerbaru = $queryTransaksi
-                ->take(5)
-                ->get();
-        }
-
-        // PEMBELI hanya melihat transaksi miliknya sendiri
-        elseif ($user->role === 'pembeli') {
-            $totalTransaksi = Transaksi::where('id_pembeli', $user->id_user)->count();
-
-            $transaksiTerbaru = $queryTransaksi
-                ->where('id_pembeli', $user->id_user)
-                ->take(5)
-                ->get();
-        }
-
-        // PETERNAK hanya melihat transaksi penjualan miliknya
-        elseif ($user->role === 'peternak') {
-            $totalTransaksi = Transaksi::where('id_penjual', $user->id_user)->count();
-
-            $transaksiTerbaru = $queryTransaksi
-                ->where('id_penjual', $user->id_user)
-                ->take(5)
-                ->get();
-        }
-
-        else {
-            $totalTransaksi = 0;
-            $transaksiTerbaru = collect([]);
-        }
-
+        // Mengambil data kawin silang terbaru
         $breedingTerbaru = KawinSilang::with(['kudaBetina', 'kudaJantan'])
             ->latest()
             ->take(5)
             ->get();
 
+        // Menampilkan halaman dashboard
         return view('admin.dashboard', compact(
             'totalKuda',
             'totalTransaksi',
@@ -93,5 +44,86 @@ class DashboardController extends Controller
             'transaksiTerbaru',
             'breedingTerbaru'
         ));
+    }
+
+    private function getTotalKudaByRole($user)
+    {
+        // Admin dapat menghitung semua kuda
+        if ($user->role === 'admin') {
+            return Kuda::count();
+        }
+
+        // Peternak hanya menghitung kuda dari peternakannya sendiri
+        if ($user->role === 'peternak') {
+            return Kuda::whereHas('peternakan', function ($q) use ($user) {
+                $q->where('id_user', $user->id_user);
+            })->count();
+        }
+
+        // Pembeli hanya menghitung kuda yang transaksinya selesai
+        if ($user->role === 'pembeli') {
+            return Kuda::whereHas('transaksi', function ($q) use ($user) {
+                $q->where('id_pembeli', $user->id_user)
+                  ->where('status_transaksi', 'selesai');
+            })->count();
+        }
+
+        // Mengembalikan nol jika role tidak dikenali
+        return 0;
+    }
+
+    private function getTotalTransaksiByRole($user)
+    {
+        // Admin dapat menghitung semua transaksi
+        if ($user->role === 'admin') {
+            return Transaksi::count();
+        }
+
+        // Pembeli hanya menghitung transaksi miliknya sendiri
+        if ($user->role === 'pembeli') {
+            return Transaksi::where('id_pembeli', $user->id_user)->count();
+        }
+
+        // Peternak hanya menghitung transaksi penjualan miliknya
+        if ($user->role === 'peternak') {
+            return Transaksi::where('id_penjual', $user->id_user)->count();
+        }
+
+        // Mengembalikan nol jika role tidak dikenali
+        return 0;
+    }
+
+    private function getTransaksiTerbaruByRole($user)
+    {
+        // Query dasar transaksi terbaru beserta relasinya
+        $query = Transaksi::with([
+            'kuda',
+            'pembeli',
+            'penjual'
+        ])->latest();
+
+        // Admin dapat melihat semua transaksi terbaru
+        if ($user->role === 'admin') {
+            return $query->take(5)->get();
+        }
+
+        // Pembeli hanya melihat transaksi terbarunya sendiri
+        if ($user->role === 'pembeli') {
+            return $query
+                ->where('id_pembeli', $user->id_user)
+                ->take(5)
+                ->get();
+        }
+
+        // Peternak hanya melihat transaksi penjualan terbarunya sendiri
+        if ($user->role === 'peternak') {
+            return $query
+                ->where('id_penjual', $user->id_user)
+                ->take(5)
+                ->get();
+        }
+
+        // Mengembalikan data kosong jika role tidak dikenali
+        return collect([]);
     }
 }

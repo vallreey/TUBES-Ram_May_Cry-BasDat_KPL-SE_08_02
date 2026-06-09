@@ -15,7 +15,8 @@ class DashboardApiController extends Controller
 
     public function summary()
     {
-        return $this->successResponse([
+        // Mengambil ringkasan total data untuk dashboard API
+        $summary = [
             'total_user' => User::count(),
             'total_peternakan' => Peternakan::count(),
             'total_kuda' => Kuda::count(),
@@ -24,6 +25,12 @@ class DashboardApiController extends Controller
             'total_kuda_breeding' => Kuda::where('status_jual', 'breeding')->count(),
             'total_transaksi' => Transaksi::count(),
             'total_kawin_silang' => KawinSilang::count(),
-        ], 'Ringkasan dashboard berhasil diambil');
+        ];
+
+        // Mengembalikan response ringkasan dashboard
+        return $this->successResponse(
+            $summary,
+            'Ringkasan dashboard berhasil diambil'
+        );
     }
 }

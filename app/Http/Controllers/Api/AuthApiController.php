@@ -16,6 +16,7 @@ class AuthApiController extends Controller
     public function register(Request $request)
     {
         try {
+            // Memvalidasi data register API
             $validated = $request->validate([
                 'nama_lengkap' => 'required|string|max:60',
                 'email' => 'required|email|unique:users,email',
@@ -29,9 +30,11 @@ class AuthApiController extends Controller
                 'alamat_lengkap' => 'nullable|string',
             ]);
         } catch (ValidationException $e) {
+            // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
         }
 
+        // Membuat akun user baru
         $user = User::create([
             'nama_lengkap' => $validated['nama_lengkap'],
             'email' => $validated['email'],
@@ -41,6 +44,7 @@ class AuthApiController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Membuat data peternakan jika user mendaftar sebagai peternak
         if ($user->role === 'peternak') {
             Peternakan::create([
                 'nama_peternakan' => $validated['nama_peternakan'],
@@ -51,6 +55,7 @@ class AuthApiController extends Controller
             ]);
         }
 
+        // Mengembalikan response register berhasil
         return $this->successResponse(
             $user->load('peternakan'),
             'Registrasi API berhasil',
@@ -61,20 +66,25 @@ class AuthApiController extends Controller
     public function login(Request $request)
     {
         try {
+            // Memvalidasi data login API
             $validated = $request->validate([
                 'email' => 'required|email',
                 'password' => 'required|string',
             ]);
         } catch (ValidationException $e) {
+            // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
         }
 
+        // Mencari user berdasarkan email
         $user = User::where('email', $validated['email'])->first();
 
+        // Mengecek email dan password
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return $this->errorResponse('Email atau password salah', 401);
         }
 
+        // Mengembalikan response login berhasil
         return $this->successResponse($user, 'Login API berhasil');
     }
 }
