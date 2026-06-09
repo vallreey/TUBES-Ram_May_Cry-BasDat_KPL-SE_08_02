@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kuda;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 
@@ -9,137 +10,200 @@ class TransaksiController extends Controller
 {
     public function index()
     {
-    $user = auth()->user();
+        // Mengambil user yang sedang login
+        $user = auth()->user();
 
-    $query = Transaksi::with([
-        'kuda',
-        'pembeli',
-        'penjual',
-        'lisensi'
-    ])->latest();
+        // Mengambil data transaksi beserta relasinya
+        $transaksi = $this->getTransaksiByRole($user);
 
-    // ADMIN bisa melihat semua transaksi
-    if ($user->role === 'admin') {
-        $transaksi = $query->get();
-    }
-
-    // PEMBELI hanya melihat transaksi miliknya sendiri
-    elseif ($user->role === 'pembeli') {
-        $transaksi = $query
-            ->where('id_pembeli', $user->id_user)
-            ->get();
-    }
-
-    // PETERNAK hanya melihat transaksi yang dia lakukan sebagai penjual
-    elseif ($user->role === 'peternak') {
-        $transaksi = $query
-            ->where('id_penjual', $user->id_user)
-            ->get();
-    }
-
-    // Jika role tidak dikenal
-    else {
-        $transaksi = collect([]);
-    }
-
-    return view('admin.transaksi.index', compact('transaksi'));
+        // Menampilkan halaman transaksi
+        return view('admin.transaksi.index', compact('transaksi'));
     }
 
     public function create()
     {
-        return view('admin.transaksi.create');
+        // Mengarahkan ke halaman transaksi karena form manual belum digunakan
+        return redirect()
+            ->route('transaksi.index')
+            ->with('error', 'Transaksi dibuat melalui tombol beli kuda.');
     }
 
     public function store(Request $request)
     {
-    $user = auth()->user();
+        // Mengambil user yang sedang login
+        $user = auth()->user();
 
-    if ($user->role !== 'pembeli') {
-        return back()->with('error', 'Hanya pembeli yang bisa membeli kuda.');
-    }
+        // Mencegah selain pembeli membuat transaksi pembelian
+        if ($user->role !== 'pembeli') {
+            return back()->with('error', 'Hanya pembeli yang bisa membeli kuda.');
+        }
 
-    $kuda = \App\Models\Kuda::with(['peternakan', 'lisensi'])
-        ->findOrFail($request->id_kuda);
+        // Memvalidasi input pembelian
+        $validated = $request->validate([
+            'id_kuda'        => 'required|exists:kuda,id_kuda',
+            'pakai_lisensi' => 'required|in:0,1',
+        ]);
 
-    if ($kuda->status_jual !== 'tersedia') {
-        return back()->with('error', 'Kuda ini sudah tidak tersedia.');
-    }
+        // Mengambil data kuda beserta peternakan dan lisensinya
+        $kuda = Kuda::with(['peternakan', 'lisensi'])
+            ->findOrFail($validated['id_kuda']);
 
-    $idLisensi = null;
+        // Mencegah pembelian kuda yang tidak tersedia
+        if ($kuda->status_jual !== 'tersedia') {
+            return back()->with('error', 'Kuda ini sudah tidak tersedia.');
+        }
 
-    if ($request->pakai_lisensi == 1 && $kuda->lisensi) {
-        $idLisensi = $kuda->lisensi->id_lisensi;
-    }
+        // Mencegah transaksi jika data peternakan kuda tidak tersedia
+        if (!$kuda->peternakan) {
+            return back()->with('error', 'Data peternakan kuda tidak ditemukan.');
+        }
 
-    \App\Models\Transaksi::create([
-        'status_transaksi' => 'pending',
-        'tgl_transaksi'    => now(),
-        'harga_final'      => $kuda->harga_buka,
-        'id_kuda'          => $kuda->id_kuda,
-        'id_lisensi'       => $idLisensi,
-        'id_pembeli'       => $user->id_user,
-        'id_penjual'       => $kuda->peternakan->id_user,
-    ]);
+        // Menentukan apakah pembelian menggunakan lisensi
+        $idLisensi = $this->getLisensiPembelian($validated['pakai_lisensi'], $kuda);
 
-    return redirect()
-        ->route('transaksi.index')
-        ->with('success', 'Pengajuan pembelian berhasil dikirim ke penjual.');
+        // Membuat transaksi dengan status awal pending
+        Transaksi::create([
+            'status_transaksi' => 'pending',
+            'tgl_transaksi'    => now(),
+            'harga_final'      => $kuda->harga_buka,
+            'id_kuda'          => $kuda->id_kuda,
+            'id_lisensi'       => $idLisensi,
+            'id_pembeli'       => $user->id_user,
+            'id_penjual'       => $kuda->peternakan->id_user,
+        ]);
+
+        return redirect()
+            ->route('transaksi.index')
+            ->with('success', 'Pengajuan pembelian berhasil dikirim ke penjual.');
     }
 
     public function show($id)
     {
-        return view('admin.transaksi.show');
+        // Mengambil detail transaksi berdasarkan ID
+        $transaksi = Transaksi::with(['kuda', 'pembeli', 'penjual', 'lisensi'])
+            ->findOrFail($id);
+
+        // Menampilkan halaman detail transaksi
+        return view('admin.transaksi.show', compact('transaksi'));
     }
 
     public function edit($id)
     {
-        return view('admin.transaksi.edit');
+        // Mengarahkan ke halaman transaksi karena edit manual belum digunakan
+        return redirect()
+            ->route('transaksi.index')
+            ->with('error', 'Transaksi hanya bisa diproses melalui View Detail.');
     }
 
     public function update(Request $request, $id)
     {
-    $user = auth()->user();
+        // Mengambil user yang sedang login
+        $user = auth()->user();
 
-    $transaksi = Transaksi::with('kuda')->findOrFail($id);
+        // Memvalidasi aksi transaksi
+        $validated = $request->validate([
+            'aksi' => 'required|in:terima,tolak',
+        ]);
 
-    if (
-        $user->role !== 'peternak'
-        || $transaksi->id_penjual !== $user->id_user
-    ) {
+        // Mengambil transaksi beserta data kuda
+        $transaksi = Transaksi::with('kuda')->findOrFail($id);
+
+        // Mencegah selain peternak pemilik transaksi memproses transaksi
+        if (
+            $user->role !== 'peternak'
+            || $transaksi->id_penjual !== $user->id_user
+        ) {
+            return redirect()
+                ->back()
+                ->with('error', 'Anda tidak memiliki akses untuk transaksi ini.');
+        }
+
+        // Mencegah transaksi diproses lebih dari satu kali
+        if ($transaksi->status_transaksi !== 'pending') {
+            return redirect()
+                ->back()
+                ->with('error', 'Transaksi ini sudah diproses.');
+        }
+
+        // Menerima transaksi dan mengubah status kuda menjadi terjual
+        if ($validated['aksi'] === 'terima') {
+            $transaksi->update([
+                'status_transaksi' => 'selesai',
+            ]);
+
+            if ($transaksi->kuda) {
+                $transaksi->kuda->update([
+                    'status_jual' => 'terjual',
+                ]);
+            }
+        }
+
+        // Menolak transaksi dan mengubah status transaksi menjadi dibatalkan
+        if ($validated['aksi'] === 'tolak') {
+            $transaksi->update([
+                'status_transaksi' => 'dibatalkan',
+            ]);
+        }
+
         return redirect()
             ->back()
-            ->with('error', 'Anda tidak memiliki akses untuk transaksi ini.');
-    }
-
-    if ($transaksi->status_transaksi !== 'pending') {
-        return redirect()
-            ->back()
-            ->with('error', 'Transaksi ini sudah diproses.');
-    }
-
-    if ($request->aksi === 'terima') {
-        $transaksi->update([
-            'status_transaksi' => 'selesai',
-        ]);
-
-        $transaksi->kuda->update([
-            'status_jual' => 'terjual',
-        ]);
-    }
-
-    if ($request->aksi === 'tolak') {
-        $transaksi->update([
-            'status_transaksi' => 'dibatalkan',
-        ]);
-    }
-
-    return redirect()
-        ->back()
-        ->with('success', 'Status transaksi berhasil diperbarui.');
+            ->with('success', 'Status transaksi berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        //
+        // Mengarahkan ke halaman transaksi karena hapus transaksi belum digunakan
+        return redirect()
+            ->route('transaksi.index')
+            ->with('error', 'Fitur hapus transaksi belum tersedia.');
+    }
+
+    private function getTransaksiByRole($user)
+    {
+        // Query dasar untuk mengambil transaksi beserta relasinya
+        $query = Transaksi::with([
+            'kuda',
+            'pembeli',
+            'penjual',
+            'lisensi'
+        ])->latest();
+
+        // Admin dapat melihat semua transaksi
+        if ($user->role === 'admin') {
+            return $query->get();
+        }
+
+        // Pembeli hanya melihat transaksi miliknya sendiri
+        if ($user->role === 'pembeli') {
+            return $query
+                ->where('id_pembeli', $user->id_user)
+                ->get();
+        }
+
+        // Peternak hanya melihat transaksi penjualan miliknya
+        if ($user->role === 'peternak') {
+            return $query
+                ->where('id_penjual', $user->id_user)
+                ->get();
+        }
+
+        // Mengembalikan data kosong jika role tidak dikenali
+        return collect([]);
+    }
+
+    private function getLisensiPembelian($pakaiLisensi, $kuda)
+    {
+        // Mengembalikan null jika pembeli tidak memilih lisensi
+        if ($pakaiLisensi == 0) {
+            return null;
+        }
+
+        // Mengembalikan null jika kuda tidak memiliki lisensi
+        if (!$kuda->lisensi) {
+            return null;
+        }
+
+        // Mengembalikan id lisensi jika pembeli memilih lisensi
+        return $kuda->lisensi->id_lisensi;
     }
 }
