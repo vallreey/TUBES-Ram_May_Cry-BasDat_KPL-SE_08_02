@@ -39,8 +39,18 @@ class UserApiController extends Controller
     public function store(Request $request)
     {
         try {
+        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+            $validated = $request->validate([
+                'nama_lengkap' => 'required|string|max:60',
+                'email' => 'required|email|unique:users,email',
+                'no_telp' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string',
+                'role' => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
+                'password' => 'required|string|min:8',
+
             // Memvalidasi data user sebelum disimpan
             $validated = $this->validateUserData($request);
+        staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -67,8 +77,19 @@ class UserApiController extends Controller
         }
 
         try {
+        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+            $validated = $request->validate([
+                'nama_lengkap' => 'sometimes|required|string|max:60',
+                'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($user->id_user, 'id_user')],
+                'no_telp' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string',
+                'role' => 'sometimes|required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
+                'password' => 'nullable|string|min:8',
+            ]);
+
             // Memvalidasi data user yang akan diperbarui
             $validated = $this->validateUserUpdateData($request, $user);
+        staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());

@@ -22,6 +22,12 @@ class Kuda extends Model
         'id_ayah',
     ];
 
+    public const STATUS_TERSEDIA = 'tersedia';
+    public const STATUS_TERJUAL = 'terjual';
+    public const STATUS_BREEDING = 'breeding';
+
+    use HasFactory;
+    
     public function peternakan()
     {
         return $this->belongsTo(

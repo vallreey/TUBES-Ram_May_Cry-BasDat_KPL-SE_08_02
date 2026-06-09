@@ -30,6 +30,12 @@ class User extends Authenticatable
 
     protected $primaryKey = 'id_user';
 
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_PETERNAK = 'peternak';
+    public const ROLE_PEMBELI = 'pembeli';
+
+    use HasFactory, Notifiable;
+    
     protected $fillable = [
         'nama_lengkap',
         'email',
