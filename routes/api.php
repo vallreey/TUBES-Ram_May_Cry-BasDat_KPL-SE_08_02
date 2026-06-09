@@ -21,14 +21,18 @@ Route::get('/health', function () {
     ]);
 });
 
-Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthApiController::class, 'register']);
-    Route::post('/login', [AuthApiController::class, 'login']);
+//fix route api
+Route::prefix('auth')->name('api.auth.')->group(function () {
+    Route::post('/register', [AuthApiController::class, 'register'])->name('register');
+    Route::post('/login', [AuthApiController::class, 'login'])->name('login');
 });
 
-Route::get('/dashboard-summary', [DashboardApiController::class, 'summary']);
+Route::get('/dashboard-summary', [DashboardApiController::class, 'summary'])
+    ->name('api.dashboard.summary');
 
-Route::apiResource('users', UserApiController::class);
-Route::apiResource('peternakan', PeternakanApiController::class);
-Route::apiResource('kuda', KudaApiController::class);
-Route::apiResource('transaksi', TransaksiApiController::class);
+Route::name('api.')->group(function () {
+    Route::apiResource('users', UserApiController::class);
+    Route::apiResource('peternakan', PeternakanApiController::class);
+    Route::apiResource('kuda', KudaApiController::class);
+    Route::apiResource('transaksi', TransaksiApiController::class);
+});
