@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Kuda;
 use App\Models\Peternakan;
 use App\Models\Transaksi;
-use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Transaksi;
+use Illuminate\Http\Request;
 
 class KudaController extends Controller
 {
@@ -16,27 +15,9 @@ class KudaController extends Controller
         // Mengambil user yang sedang login
         $user = auth()->user();
 
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        if ($user->role === User::ROLE_ADMIN) {
-            $kuda = Kuda::with(['peternakan', 'lisensi'])->latest()->get();
-        } elseif ($user->role === User::ROLE_PETERNAK) {
-            $kuda = Kuda::with(['peternakan', 'lisensi'])
-                ->whereHas('peternakan', function ($q) use ($user) {
-                    $q->where('id_user', $user->id_user);
-                })
-                ->latest()->get();
-        } else {
-            $kuda = Kuda::with(['peternakan', 'lisensi'])
-                ->whereHas('transaksi', function ($q) use ($user) {
-                    $q->where('id_pembeli', $user->id_user)
-                      ->where('status_transaksi', Transaksi::STATUS_SELESAI);
-                })
-                ->latest()->get();
-        }
-
+        // Parameterization/Generics-AdhiPuspoHadikusumo
         // Mengambil data kuda berdasarkan role user
         $kuda = $this->getKudaByRole($user);
-        staging
 
         // Menentukan halaman aktif
         $page = 'owned';
@@ -47,66 +28,33 @@ class KudaController extends Controller
 
     public function tersedia()
     {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', Kuda::STATUS_TERSEDIA)
-            ->latest()->get();
-
-        $page = 'tersedia';
-
-        return view('admin.kuda.index', compact('kuda', 'page'));
-
-        // Menampilkan kuda dengan status tersedia
-        return $this->showKudaByStatus('tersedia');
-        staging
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        return $this->showKudaByStatus(Kuda::STATUS_TERSEDIA);
     }
 
     public function terjual()
     {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', Kuda::STATUS_TERJUAL)
-            ->latest()->get();
-
-        $page = 'terjual';
-        
-        return view('admin.kuda.index', compact('kuda', 'page'));
-
-        // Menampilkan kuda dengan status terjual
-        return $this->showKudaByStatus('terjual');
-        staging
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        return $this->showKudaByStatus(Kuda::STATUS_TERJUAL);
     }
 
     public function breeding()
     {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        $kuda = Kuda::with(['peternakan', 'lisensi'])
-            ->where('status_jual', Kuda::STATUS_BREEDING)
-            ->latest()->get();
-
-        $page = 'breeding';
-
-        return view('admin.kuda.index', compact('kuda', 'page'));
-
-        // Menampilkan kuda dengan status breeding
-        return $this->showKudaByStatus('breeding');
-        staging
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        return $this->showKudaByStatus(Kuda::STATUS_BREEDING);
     }
 
     public function create()
     {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        if (auth()->user()->role === User::ROLE_PEMBELI) {
-            return redirect()->route('kuda.index')
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
         // Mengambil user yang sedang login
         $user = auth()->user();
 
         // Mencegah pembeli menambahkan kuda
-        if ($user->role === 'pembeli') {
+        if ($user->role === User::ROLE_PEMBELI) {
             return redirect()
                 ->route('kuda.index')
-        staging
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda karena tidak memiliki peternakan.');
         }
 
@@ -119,19 +67,16 @@ class KudaController extends Controller
         // Mengambil user yang sedang login
         $user = auth()->user();
 
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        if ($user->role === User::ROLE_PEMBELI) {
-            return redirect()->route('kuda.index')
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
         // Mencegah pembeli menyimpan data kuda
-        if ($user->role === 'pembeli') {
+        if ($user->role === User::ROLE_PEMBELI) {
             return redirect()
                 ->route('kuda.index')
-        staging
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda.');
         }
 
-        // Validasi data kuda sebelum disimpan
+        // Memvalidasi data kuda sebelum disimpan
         $validated = $this->validateKudaData($request);
 
         // Mengambil peternakan milik user
@@ -139,7 +84,8 @@ class KudaController extends Controller
 
         // Mencegah user tanpa peternakan menambahkan kuda
         if (!$peternakan) {
-            return redirect()->route('kuda.index')
+            return redirect()
+                ->route('kuda.index')
                 ->with('error', 'Anda belum memiliki peternakan.');
         }
 
@@ -154,131 +100,68 @@ class KudaController extends Controller
             'id_ayah'       => $validated['id_ayah'] ?? null,
         ]);
 
-     Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        return redirect()->route('kuda.index')->with('success', 'Data kuda berhasil ditambahkan.');
-    }
-
-    public function edit(Kuda $kuda)
-    {
-    $user = auth()->user();
-
-        // Mengembalikan user ke halaman data kuda
         return redirect()
             ->route('kuda.index')
             ->with('success', 'Data kuda berhasil ditambahkan.');
     }
 
     public function edit($id)
-    {
-        // Mengambil user yang sedang login
-        $user = auth()->user();
-        staging
+{
+    // Mengambil user yang sedang login
+    $user = auth()->user();
 
-        // Mengambil data kuda beserta relasinya
-        $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
+    // Mengambil data kuda beserta relasinya
+    $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
 
-    Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-    // ADMIN boleh
+    // Default false agar tidak undefined di blade
+    $bolehEditNama = false;
+
+    // Admin bisa mengedit semua data kuda
     if ($user->role === User::ROLE_ADMIN) {
-        return view('admin.kuda.edit', compact('kuda'));
+        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
     }
 
-    // Cari transaksi selesai milik pembeli
-    $transaksi = \App\Models\Transaksi::where('id_kuda', $kuda->id_kuda)
-            ->where('id_pembeli', $user->id_user)
-            ->where('status_transaksi', Transaksi::STATUS_SELESAI)
-            ->latest()->first();
+    // Peternak hanya bisa mengedit kuda miliknya sendiri
+    if ($user->role === User::ROLE_PETERNAK) {
+        if (!$this->canPeternakManageKuda($user, $kuda)) {
+            return redirect()
+                ->route('kuda.index')
+                ->with('error', 'Anda tidak bisa mengedit kuda ini.');
+        }
 
-    $bolehEditNama = $user->role === User::ROLE_PEMBELI 
-        && $transaksi 
-        && (!$kuda->lisensi 
-        || $transaksi->id_lisensi !== null);
-
-    // Kalau pembeli tidak punya lisensi
-    if ($user->role === User::ROLE_PEMBELI && !$bolehEditNama) {
-        return redirect()->route('kuda.index')
-            ->with('error', 'Anda tidak memiliki lisensi untuk mengubah nama kuda ini.');
+        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
     }
 
-    return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
-    
+    // Pembeli hanya bisa mengedit nama kuda jika memenuhi aturan lisensi
+    if ($user->role === User::ROLE_PEMBELI) {
+        $bolehEditNama = $this->canPembeliEditNamaKuda($user, $kuda);
 
-        // Admin bisa mengedit semua data kuda
-        if ($user->role === 'admin') {
-            return view('admin.kuda.edit', compact('kuda'));
+        if (!$bolehEditNama) {
+            return redirect()
+                ->route('kuda.index')
+                ->with('error', 'Anda tidak memiliki lisensi untuk mengubah nama kuda ini.');
         }
 
-        // Peternak hanya bisa mengedit kuda miliknya sendiri
-        if ($user->role === 'peternak') {
-            if (!$this->canPeternakManageKuda($user, $kuda)) {
-                return redirect()
-                    ->route('kuda.index')
-                    ->with('error', 'Anda tidak bisa mengedit kuda ini.');
-            }
-
-            return view('admin.kuda.edit', compact('kuda'));
-        }
-
-        // Pembeli hanya bisa mengedit nama kuda jika memenuhi aturan lisensi
-        if ($user->role === 'pembeli') {
-            $bolehEditNama = $this->canPembeliEditNamaKuda($user, $kuda);
-
-            if (!$bolehEditNama) {
-                return redirect()
-                    ->route('kuda.index')
-                    ->with('error', 'Anda tidak memiliki akses untuk mengubah nama kuda ini.');
-            }
-
-            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
-        }
-
-        // Menangani role yang tidak dikenali
-        return redirect()
-            ->route('kuda.index')
-            ->with('error', 'Role tidak dikenali.');
-        staging
+        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
     }
+
+    return redirect()
+        ->route('kuda.index')
+        ->with('error', 'Role tidak dikenali.');
+}
 
     public function update(Request $request, $id)
     {
         // Mengambil user yang sedang login
         $user = auth()->user();
 
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-    // $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
-    kuda->load(['peternakan', 'lisensi']);
-
-    // ADMIN boleh update semua field
-    if ($user->role === User::ROLE_ADMIN) {
-        $kuda->update($request->all());
-        return redirect()->route('kuda.index')->with('success', 'Data kuda berhasil diperbarui.');
-    }
-
-    // PETERNAK hanya boleh update kuda miliknya dan belum terjual
-    if ($user->role === User::ROLE_PETERNAK) {
-        if (!$kuda->peternakan || $kuda->peternakan->id_user !== $user->id_user || $kuda->status_jual === Kuda::STATUS_TERJUAL) {
-            return redirect()->route('kuda.index')
-                ->with('error', 'Anda tidak bisa mengubah data kuda ini.');
-        }
-
-        $kuda->update($request->all());
-        return redirect()->route('kuda.index')->with('success', 'Data kuda berhasil diperbarui.');
-    }
-
-    // PEMBELI hanya boleh ubah nama kuda jika memenuhi aturan lisensi
-    if ($user->role === User::ROLE_PEMBELI) {
-        $transaksi = \App\Models\Transaksi::where('id_kuda', $kuda->id_kuda)
-            ->where('id_pembeli', $user->id_user)
-            ->where('status_transaksi', Transaksi::STATUS_SELESAI)
-            ->latest()->first();
-
-        $bolehEditNama = $transaksi && (!$kuda->lisensi || $transaksi->id_lisensi !== null);
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
         // Mengambil data kuda yang akan diperbarui
         $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
 
         // Admin bisa memperbarui semua data kuda
-        if ($user->role === 'admin') {
+        if ($user->role === User::ROLE_ADMIN) {
             $validated = $this->validateKudaData($request);
 
             $kuda->update($validated);
@@ -289,7 +172,7 @@ class KudaController extends Controller
         }
 
         // Peternak hanya bisa memperbarui kuda miliknya sendiri
-        if ($user->role === 'peternak') {
+        if ($user->role === User::ROLE_PETERNAK) {
             if (!$this->canPeternakManageKuda($user, $kuda)) {
                 return redirect()
                     ->route('kuda.index')
@@ -299,31 +182,23 @@ class KudaController extends Controller
             $validated = $this->validateKudaData($request);
 
             $kuda->update($validated);
-          staging
+
+            // staging
 
             return redirect()
                 ->route('kuda.index')
                 ->with('success', 'Data kuda berhasil diperbarui.');
         }
 
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        $request->validate(['nama_kuda' => 'required|string|max:100']);
-        $kuda->update(['nama_kuda' => $request->nama_kuda]);
-
-        return redirect()->route('kuda.index')->with('success', 'Nama kuda berhasil diperbarui.');
-    }
-
-    return redirect()->route('kuda.index')->with('error', 'Role tidak dikenali.');
-
         // Pembeli hanya bisa memperbarui nama kuda
-        if ($user->role === 'pembeli') {
+        if ($user->role === User::ROLE_PEMBELI) {
             if (!$this->canPembeliEditNamaKuda($user, $kuda)) {
                 return redirect()
                     ->route('kuda.index')
                     ->with('error', 'Anda tidak memiliki akses untuk mengubah nama kuda ini.');
             }
 
-            // Validasi nama kuda yang diubah pembeli
+            // Memvalidasi nama kuda yang diubah pembeli
             $request->validate([
                 'nama_kuda' => 'required|string|max:100',
             ]);
@@ -342,44 +217,38 @@ class KudaController extends Controller
         return redirect()
             ->route('kuda.index')
             ->with('error', 'Role tidak dikenali.');
-        staging
     }
 
     public function destroy($id)
     {
         // Mengambil user yang sedang login
         $user = auth()->user();
-        $kuda->load('peternakan');
-
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        if ($user->role === User::ROLE_PEMBELI) {
-            return redirect()->route('kuda.index')->with('error', 'Pembeli tidak bisa menghapus data kuda.');
-        }
-
-        if ($user->role === User::ROLE_PETERNAK && (!$kuda->peternakan || $kuda->peternakan->id_user !== $user->id_user || $kuda->status_jual === Kuda::STATUS_TERJUAL)) {
-            return redirect()->route('kuda.index')->with('error', 'Anda tidak bisa menghapus kuda ini.');
 
         // Mengambil data kuda yang akan dihapus
         $kuda = Kuda::with('peternakan')->findOrFail($id);
 
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Mencegah pembeli menghapus data kuda
-        if ($user->role === 'pembeli') {
+        if ($user->role === User::ROLE_PEMBELI) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Pembeli tidak bisa menghapus data kuda.');
         }
 
         // Peternak hanya bisa menghapus kuda miliknya sendiri
-        if ($user->role === 'peternak' && !$this->canPeternakManageKuda($user, $kuda)) {
+        if ($user->role === User::ROLE_PETERNAK && !$this->canPeternakManageKuda($user, $kuda)) {
             return redirect()
                 ->route('kuda.index')
                 ->with('error', 'Anda tidak bisa menghapus kuda ini.');
-        staging
         }
 
         // Menghapus data kuda
         $kuda->delete();
-        return redirect()->route('kuda.index')->with('success', 'Data kuda berhasil dihapus.');
+
+        return redirect()
+            ->route('kuda.index')
+            ->with('success', 'Data kuda berhasil dihapus.');
     }
 
     private function getKudaByRole($user)
@@ -388,12 +257,12 @@ class KudaController extends Controller
         $query = Kuda::with(['peternakan', 'lisensi', 'transaksi'])->latest();
 
         // Admin dapat melihat semua data kuda
-        if ($user->role === 'admin') {
+        if ($user->role === User::ROLE_ADMIN) {
             return $query->get();
         }
 
         // Peternak hanya melihat kuda dari peternakannya sendiri
-        if ($user->role === 'peternak') {
+        if ($user->role === User::ROLE_PETERNAK) {
             return $query
                 ->whereHas('peternakan', function ($q) use ($user) {
                     $q->where('id_user', $user->id_user);
@@ -402,11 +271,11 @@ class KudaController extends Controller
         }
 
         // Pembeli hanya melihat kuda yang sudah dibeli
-        if ($user->role === 'pembeli') {
+        if ($user->role === User::ROLE_PEMBELI) {
             return $query
                 ->whereHas('transaksi', function ($q) use ($user) {
                     $q->where('id_pembeli', $user->id_user)
-                      ->where('status_transaksi', 'selesai');
+                      ->where('status_transaksi', Transaksi::STATUS_SELESAI);
                 })
                 ->get();
         }
@@ -432,7 +301,7 @@ class KudaController extends Controller
 
     private function validateKudaData(Request $request)
     {
-        // Validasi input data kuda
+        // Memvalidasi input data kuda
         return $request->validate([
             'nama_kuda'   => 'required|string|max:100',
             'jenis_kuda'  => 'required|string|max:50',
@@ -448,7 +317,7 @@ class KudaController extends Controller
         // Mengecek apakah peternak boleh mengelola kuda
         return $kuda->peternakan
             && $kuda->peternakan->id_user === $user->id_user
-            && $kuda->status_jual !== 'terjual';
+            && $kuda->status_jual !== Kuda::STATUS_TERJUAL;
     }
 
     private function canPembeliEditNamaKuda($user, $kuda)
@@ -456,7 +325,7 @@ class KudaController extends Controller
         // Mencari transaksi selesai milik pembeli
         $transaksi = Transaksi::where('id_kuda', $kuda->id_kuda)
             ->where('id_pembeli', $user->id_user)
-            ->where('status_transaksi', 'selesai')
+            ->where('status_transaksi', Transaksi::STATUS_SELESAI)
             ->latest()
             ->first();
 
