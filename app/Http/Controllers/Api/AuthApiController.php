@@ -44,12 +44,12 @@ class AuthApiController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        if ($user->role === User::ROLE_PETERNAK) {
-          
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Membuat data peternakan jika user mendaftar sebagai peternak
-        if ($user->role === 'peternak') {
-        staging
+        if ($user->role === User::ROLE_PETERNAK) {
+            // staging
+
             Peternakan::create([
                 'nama_peternakan' => $validated['nama_peternakan'],
                 'kapasitas_kandang' => $validated['kapasitas_kandang'],

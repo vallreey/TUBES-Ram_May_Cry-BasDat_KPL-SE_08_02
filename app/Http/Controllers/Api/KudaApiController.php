@@ -46,13 +46,13 @@ class KudaApiController extends Controller
 
     public function show($id)
     {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-        $kuda = Kuda::with(['peternakan.user', 'lisensi', 'ibu', 'ayah', 'transaksi'])->find($id);
-      
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Mengambil detail kuda berdasarkan ID
         $kuda = Kuda::with(['peternakan.user', 'lisensi', 'ibu', 'ayah', 'transaksi'])
             ->find($id);
-        staging
+
+        // staging
 
         // Mengembalikan error jika kuda tidak ditemukan
         if (!$kuda) {
@@ -66,20 +66,12 @@ class KudaApiController extends Controller
     public function store(Request $request)
     {
         try {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-            $validated = $request->validate([
-                'nama_kuda' => 'required|string|max:100',
-                'jenis_kuda' => 'required|string|max:100',
-                'status_jual' => 'required|in:' . Kuda::STATUS_TERSEDIA . ',' . Kuda::STATUS_TERJUAL . ',' . Kuda::STATUS_BREEDING,
-                'harga_buka' => 'required|numeric|min:0',
-                'id_peternakan' => 'required|exists:peternakan,id_peternakan',
-                'id_ibu' => 'nullable|exists:kuda,id_kuda',
-                'id_ayah' => 'nullable|exists:kuda,id_kuda',
-            ]);
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
             // Memvalidasi data kuda sebelum disimpan
             $validated = $this->validateKudaData($request);
-        staging
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -107,20 +99,12 @@ class KudaApiController extends Controller
         }
 
         try {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-            $validated = $request->validate([
-                'nama_kuda' => 'sometimes|required|string|max:100',
-                'jenis_kuda' => 'sometimes|required|string|max:100',
-                'status_jual' => ['sometimes', 'required', Rule::in([Kuda::STATUS_TERSEDIA, Kuda::STATUS_TERJUAL, Kuda::STATUS_BREEDING])],
-                'harga_buka' => 'sometimes|required|numeric|min:0',
-                'id_peternakan' => 'sometimes|required|exists:peternakan,id_peternakan',
-                'id_ibu' => 'nullable|exists:kuda,id_kuda',
-                'id_ayah' => 'nullable|exists:kuda,id_kuda',
-            ]);
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
             // Memvalidasi data kuda yang akan diperbarui
             $validated = $this->validateKudaUpdateData($request);
-        staging
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -159,7 +143,14 @@ class KudaApiController extends Controller
         return $request->validate([
             'nama_kuda' => 'required|string|max:100',
             'jenis_kuda' => 'required|string|max:100',
-            'status_jual' => 'required|in:tersedia,terjual,breeding',
+            'status_jual' => [
+                'required',
+                Rule::in([
+                    Kuda::STATUS_TERSEDIA,
+                    Kuda::STATUS_TERJUAL,
+                    Kuda::STATUS_BREEDING,
+                ]),
+            ],
             'harga_buka' => 'required|numeric|min:0',
             'id_peternakan' => 'required|exists:peternakan,id_peternakan',
             'id_ibu' => 'nullable|exists:kuda,id_kuda',
@@ -173,7 +164,15 @@ class KudaApiController extends Controller
         return $request->validate([
             'nama_kuda' => 'sometimes|required|string|max:100',
             'jenis_kuda' => 'sometimes|required|string|max:100',
-            'status_jual' => ['sometimes', 'required', Rule::in(['tersedia', 'terjual', 'breeding'])],
+            'status_jual' => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    Kuda::STATUS_TERSEDIA,
+                    Kuda::STATUS_TERJUAL,
+                    Kuda::STATUS_BREEDING,
+                ]),
+            ],
             'harga_buka' => 'sometimes|required|numeric|min:0',
             'id_peternakan' => 'sometimes|required|exists:peternakan,id_peternakan',
             'id_ibu' => 'nullable|exists:kuda,id_kuda',

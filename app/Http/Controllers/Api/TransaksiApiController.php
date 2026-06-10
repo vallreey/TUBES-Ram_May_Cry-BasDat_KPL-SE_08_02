@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kuda;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,20 +58,12 @@ class TransaksiApiController extends Controller
     public function store(Request $request)
     {
         try {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-            $validated = $request->validate([
-                'id_kuda' => 'required|exists:kuda,id_kuda',
-                'id_lisensi' => 'nullable|exists:lisensi,id_lisensi',
-                'id_pembeli' => 'required|exists:users,id_user',
-                'id_penjual' => 'required|exists:users,id_user',
-                'harga_final' => 'required|numeric|min:0',
-                'status_transaksi' => 'nullable|in:' . Transaksi::STATUS_PENDING . ',' . Transaksi::STATUS_SELESAI . ',' . Transaksi::STATUS_DIBATALKAN,
-                'tgl_transaksi' => 'nullable|date',
-            ]);
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
             // Memvalidasi data transaksi sebelum disimpan
             $validated = $this->validateTransaksiData($request);
-        staging
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -106,20 +99,12 @@ class TransaksiApiController extends Controller
         }
 
         try {
-        Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
-            $validated = $request->validate([
-                'status_transaksi' => ['sometimes', 'required', Rule::in([Transaksi::STATUS_PENDING, Transaksi::STATUS_SELESAI, Transaksi::STATUS_DIBATALKAN])],
-                'tgl_transaksi' => 'nullable|date',
-                'harga_final' => 'sometimes|required|numeric|min:0',
-                'id_kuda' => 'sometimes|required|exists:kuda,id_kuda',
-                'id_lisensi' => 'nullable|exists:lisensi,id_lisensi',
-                'id_pembeli' => 'sometimes|required|exists:users,id_user',
-                'id_penjual' => 'sometimes|required|exists:users,id_user',
-            ]);
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
             // Memvalidasi data transaksi yang akan diperbarui
             $validated = $this->validateTransaksiUpdateData($request);
-        staging
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -130,7 +115,9 @@ class TransaksiApiController extends Controller
             $transaksi->update($validated);
 
             if (($validated['status_transaksi'] ?? null) === Transaksi::STATUS_SELESAI && $transaksi->kuda) {
-                $transaksi->kuda->update(['status_jual' => Kuda::STATUS_TERJUAL]);
+                $transaksi->kuda->update([
+                    'status_jual' => Kuda::STATUS_TERJUAL,
+                ]);
             }
         });
 
@@ -167,7 +154,14 @@ class TransaksiApiController extends Controller
             'id_pembeli' => 'required|exists:users,id_user',
             'id_penjual' => 'required|exists:users,id_user',
             'harga_final' => 'required|numeric|min:0',
-            'status_transaksi' => 'nullable|in:pending,selesai,dibatalkan',
+            'status_transaksi' => [
+                'nullable',
+                Rule::in([
+                    Transaksi::STATUS_PENDING,
+                    Transaksi::STATUS_SELESAI,
+                    Transaksi::STATUS_DIBATALKAN,
+                ]),
+            ],
             'tgl_transaksi' => 'nullable|date',
         ]);
     }
@@ -176,7 +170,15 @@ class TransaksiApiController extends Controller
     {
         // Validasi untuk memperbarui data transaksi
         return $request->validate([
-            'status_transaksi' => ['sometimes', 'required', Rule::in(['pending', 'selesai', 'dibatalkan'])],
+            'status_transaksi' => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    Transaksi::STATUS_PENDING,
+                    Transaksi::STATUS_SELESAI,
+                    Transaksi::STATUS_DIBATALKAN,
+                ]),
+            ],
             'tgl_transaksi' => 'nullable|date',
             'harga_final' => 'sometimes|required|numeric|min:0',
             'id_kuda' => 'sometimes|required|exists:kuda,id_kuda',
