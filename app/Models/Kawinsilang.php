@@ -14,6 +14,8 @@ class KawinSilang extends Model
         'tgl_breeding',
         'status_hasil',
         'perkiraan_kelahiran',
+        'id_pengaju',
+        'pengajuan_sebagai',
         'id_pemilik_betina',
         'id_pemilik_jantan',
         'id_betina',
@@ -38,5 +40,10 @@ class KawinSilang extends Model
     public function pemilikJantan()
     {
         return $this->belongsTo(User::class, 'id_pemilik_jantan', 'id_user');
+    }
+
+    public function pengaju()
+    {
+        return $this->belongsTo(User::class, 'id_pengaju', 'id_user');
     }
 }
