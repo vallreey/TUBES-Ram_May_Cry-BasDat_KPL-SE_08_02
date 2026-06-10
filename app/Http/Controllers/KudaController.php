@@ -70,7 +70,7 @@ class KudaController extends Controller
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda.');
         }
 
-        // Validasi data kuda sebelum disimpan
+        // Memvalidasi data kuda sebelum disimpan
         $validated = $this->validateKudaData($request);
 
         // Mengambil peternakan milik user
@@ -187,7 +187,7 @@ class KudaController extends Controller
                     ->with('error', 'Anda tidak memiliki akses untuk mengubah nama kuda ini.');
             }
 
-            // Validasi nama kuda yang diubah pembeli
+            // Memvalidasi nama kuda yang diubah pembeli
             $request->validate([
                 'nama_kuda' => 'required|string|max:100',
             ]);
@@ -288,7 +288,7 @@ class KudaController extends Controller
 
     private function validateKudaData(Request $request)
     {
-        // Validasi input data kuda
+        // Memvalidasi input data kuda
         return $request->validate([
             'nama_kuda'   => 'required|string|max:100',
             'jenis_kuda'  => 'required|string|max:50',
