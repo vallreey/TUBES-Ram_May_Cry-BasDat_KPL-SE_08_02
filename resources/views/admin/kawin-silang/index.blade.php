@@ -5,6 +5,10 @@
 
 @section('content')
 
+@php
+    $user = auth()->user();
+@endphp
+
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
@@ -17,7 +21,7 @@
                     </p>
                 </div>
 
-                @if(auth()->user()->role !== 'admin')
+                @if($user->role !== 'admin')
                     <a href="{{ route('kawin-silang.create') }}"
                        class="btn btn-sm bg-gradient-dark mb-0">
                         Ajukan Kawin Silang
@@ -29,7 +33,6 @@
                 <div class="table-responsive">
 
                     <table class="table align-items-center mb-0">
-
                         <thead>
                             <tr>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
@@ -42,6 +45,10 @@
 
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                     Pengaju
+                                </th>
+
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    Penawaran
                                 </th>
 
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
@@ -63,6 +70,7 @@
                                                 src="{{ asset('material/img/sendiri/Gender_hitam.png') }}"
                                                 class="me-2 my-auto"
                                                 style="width:18px; height:18px;"
+                                                onerror="this.style.display='none'"
                                             >
 
                                             <div>
@@ -98,19 +106,42 @@
                                     </td>
 
                                     <td class="text-center">
+                                        @if($b->penawaran)
+                                            <span class="text-xs font-weight-bold">
+                                                Rp {{ number_format($b->penawaran->harga_nego ?? $b->penawaran->harga_ditawarkan, 0, ',', '.') }}
+                                            </span>
+
+                                            <p class="text-xs text-secondary mb-0">
+                                                {{ $b->penawaran->pakai_lisensi ? 'Dengan Lisensi' : 'Tanpa Lisensi' }}
+                                            </p>
+                                        @else
+                                            <span class="text-xs text-secondary">
+                                                Belum ada
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-center">
                                         @php
                                             $badge = match($b->status_hasil) {
-                                                'pending'  => 'warning',
-                                                'proses'   => 'info',
-                                                'berhasil' => 'success',
-                                                'gagal'    => 'danger',
-                                                'ditolak'  => 'danger',
-                                                default    => 'secondary',
+                                                'pending'                   => 'warning',
+                                                'penawaran'                 => 'primary',
+                                                'proses'                    => 'info',
+                                                'menunggu_konfirmasi_anak'  => 'warning',
+                                                'berhasil'                  => 'success',
+                                                'gagal'                     => 'danger',
+                                                'ditolak'                   => 'danger',
+                                                default                     => 'secondary',
+                                            };
+
+                                            $labelStatus = match($b->status_hasil) {
+                                                'menunggu_konfirmasi_anak' => 'Menunggu Konfirmasi Anak',
+                                                default => ucfirst($b->status_hasil),
                                             };
                                         @endphp
 
                                         <span class="badge badge-sm bg-gradient-{{ $badge }}">
-                                            {{ ucfirst($b->status_hasil) }}
+                                            {{ $labelStatus }}
                                         </span>
                                     </td>
 
@@ -125,13 +156,12 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-sm py-4">
+                                    <td colspan="6" class="text-center text-sm py-4">
                                         Belum ada pengajuan kawin silang
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
-
                     </table>
 
                 </div>
@@ -142,6 +172,19 @@
 </div>
 
 @foreach($breeding as $b)
+    @php
+        $idPihakTerkait = $b->pengajuan_sebagai === 'betina'
+            ? $b->id_pemilik_jantan
+            : $b->id_pemilik_betina;
+
+        $isPenerimaPengajuan = $user->id_user === $idPihakTerkait;
+        $isPengaju = $user->id_user === $b->id_pengaju;
+
+        $bolehKelolaHasil =
+            $user->role === 'admin'
+            || $isPenerimaPengajuan;
+    @endphp
+
     <div class="modal fade" id="detailBreeding{{ $b->id_breeding }}" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -183,7 +226,7 @@
 
                     <p class="text-sm mb-1">
                         <strong>Status:</strong>
-                        {{ ucfirst($b->status_hasil) }}
+                        {{ $labelStatus ?? ucfirst($b->status_hasil) }}
                     </p>
 
                     <p class="text-sm mb-3">
@@ -223,85 +266,303 @@
                         {{ $b->id_jantan }}.
                     </div>
 
+                    <hr>
+
+                    <h6>Informasi Penawaran</h6>
+
+                    @if($b->penawaran)
+                        <p class="text-sm mb-1">
+                            <strong>Penawar:</strong>
+                            {{ $b->penawaran->penawar->nama_lengkap ?? '-' }}
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            <strong>Penerima Tawaran:</strong>
+                            {{ $b->penawaran->penerimaTawaran->nama_lengkap ?? '-' }}
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            <strong>Harga Ditawarkan:</strong>
+                            Rp {{ number_format($b->penawaran->harga_ditawarkan ?? 0, 0, ',', '.') }}
+                        </p>
+
+                        @if($b->penawaran->harga_nego)
+                            <p class="text-sm mb-1">
+                                <strong>Harga Nego:</strong>
+                                Rp {{ number_format($b->penawaran->harga_nego ?? 0, 0, ',', '.') }}
+                            </p>
+                        @endif
+
+                        <p class="text-sm mb-1">
+                            <strong>Lisensi:</strong>
+                            {{ $b->penawaran->pakai_lisensi ? 'Dengan Lisensi' : 'Tanpa Lisensi' }}
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            <strong>Status Penawaran:</strong>
+                            {{ ucfirst($b->penawaran->status_penawaran) }}
+                        </p>
+
+                        <p class="text-sm mb-0">
+                            <strong>Catatan:</strong>
+                            {{ $b->penawaran->catatan ?? '-' }}
+                        </p>
+                    @else
+                        <p class="text-sm text-secondary mb-0">
+                            Belum ada penawaran harga.
+                        </p>
+                    @endif
+
+                    @if($b->anak)
+                        <hr>
+
+                        <h6>Anak Hasil Breeding</h6>
+
+                        <p class="text-sm mb-1">
+                            <strong>Nama Anak:</strong>
+                            {{ $b->anak->nama_kuda ?? '-' }}
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            <strong>Jenis:</strong>
+                            {{ $b->anak->jenis_kuda ?? '-' }}
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            <strong>Status Anak:</strong>
+                            {{ ucfirst($b->anak->status_jual ?? '-') }}
+                        </p>
+
+                        <p class="text-sm mb-0">
+                            <strong>Harga:</strong>
+                            Rp {{ number_format($b->anak->harga_buka ?? 0, 0, ',', '.') }}
+                        </p>
+
+                        @if($b->anak->status_jual === 'hold')
+                            <div class="alert alert-warning text-white text-sm mt-3 mb-0">
+                                Anak kuda masih ditahan sementara dan belum masuk ke data aktif peternakan pengaju.
+                            </div>
+                        @endif
+                    @endif
+
                 </div>
 
-                <div class="modal-footer">
-                    <button class="btn btn-light" data-bs-dismiss="modal">
-                        Tutup
-                    </button>
+                <div class="modal-footer d-block">
 
-                    @php
-                        $idPihakTerkait = $b->pengajuan_sebagai === 'betina'
-                            ? $b->id_pemilik_jantan
-                            : $b->id_pemilik_betina;
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-light mb-0" data-bs-dismiss="modal">
+                            Tutup
+                        </button>
+                    </div>
 
-                        $bolehAcc =
-                            $b->status_hasil === 'pending'
-                            && (
-                                auth()->user()->role === 'admin'
-                                || auth()->user()->id_user === $idPihakTerkait
-                            );
-
-                        $bolehUpdateHasil =
-                            auth()->user()->role === 'admin'
-                            && $b->status_hasil === 'proses';
-                    @endphp
-
-                    @if($bolehAcc)
+                    @if($b->status_hasil === 'pending' && $isPenerimaPengajuan)
                         <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
                               method="POST"
-                              style="display:inline;">
+                              class="w-100">
                             @csrf
                             @method('PUT')
 
-                            <input type="hidden" name="aksi" value="tolak">
+                            <input type="hidden" name="aksi" value="kirim_penawaran">
 
-                            <button class="btn bg-gradient-danger">
-                                Tolak Pengajuan
-                            </button>
-                        </form>
+                            <h6 class="mb-3">Kirim Penawaran Breeding</h6>
 
-                        <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
-                              method="POST"
-                              style="display:inline;">
-                            @csrf
-                            @method('PUT')
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <input type="number"
+                                           name="harga_ditawarkan"
+                                           class="form-control"
+                                           placeholder="Harga penawaran"
+                                           min="0"
+                                           required>
+                                </div>
 
-                            <input type="hidden" name="aksi" value="acc">
+                                <div class="col-md-4 mb-2">
+                                    <select name="pakai_lisensi" class="form-control" required>
+                                        <option value="1">Dengan Lisensi</option>
+                                        <option value="0">Tanpa Lisensi</option>
+                                    </select>
+                                </div>
 
-                            <button class="btn bg-gradient-success">
-                                Setujui Pengajuan
-                            </button>
+                                <div class="col-md-4 mb-2">
+                                    <button type="submit" class="btn bg-gradient-success w-100 mb-0">
+                                        Kirim Penawaran
+                                    </button>
+                                </div>
+                            </div>
+
+                            <textarea name="catatan"
+                                      class="form-control mt-2"
+                                      rows="2"
+                                      placeholder="Catatan opsional"></textarea>
                         </form>
                     @endif
 
-                    @if($bolehUpdateHasil)
+                    @if(
+                        $b->status_hasil === 'penawaran'
+                        && $b->penawaran
+                        && $b->penawaran->status_penawaran === 'ditawarkan'
+                        && $isPengaju
+                    )
+                        <div class="d-flex justify-content-end gap-2 mb-3">
+                            <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                                  method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <input type="hidden" name="aksi" value="tolak_penawaran">
+
+                                <button type="submit" class="btn bg-gradient-danger mb-0">
+                                    Tolak
+                                </button>
+                            </form>
+
+                            <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                                  method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <input type="hidden" name="aksi" value="terima_penawaran">
+
+                                <button type="submit" class="btn bg-gradient-success mb-0">
+                                    Terima
+                                </button>
+                            </form>
+                        </div>
+
                         <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
                               method="POST"
-                              style="display:inline;">
+                              class="w-100">
                             @csrf
                             @method('PUT')
 
-                            <input type="hidden" name="aksi" value="berhasil">
+                            <input type="hidden" name="aksi" value="nego">
 
-                            <button class="btn bg-gradient-success">
-                                Tandai Berhasil
+                            <h6 class="mb-3">Ajukan Negosiasi</h6>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-2">
+                                    <input type="number"
+                                           name="harga_nego"
+                                           class="form-control"
+                                           placeholder="Ajukan harga nego"
+                                           min="0"
+                                           required>
+                                </div>
+
+                                <div class="col-md-4 mb-2">
+                                    <button type="submit" class="btn bg-gradient-info w-100 mb-0">
+                                        Ajukan Nego
+                                    </button>
+                                </div>
+                            </div>
+
+                            <textarea name="catatan"
+                                      class="form-control mt-2"
+                                      rows="2"
+                                      placeholder="Catatan negosiasi"></textarea>
+                        </form>
+                    @endif
+
+                    @if(
+                        $b->status_hasil === 'penawaran'
+                        && $b->penawaran
+                        && $b->penawaran->status_penawaran === 'nego'
+                        && $isPenerimaPengajuan
+                    )
+                        <div class="d-flex justify-content-end gap-2">
+                            <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                                  method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <input type="hidden" name="aksi" value="tolak_nego">
+
+                                <button type="submit" class="btn bg-gradient-danger mb-0">
+                                    Tolak Nego
+                                </button>
+                            </form>
+
+                            <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                                  method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <input type="hidden" name="aksi" value="terima_nego">
+
+                                <button type="submit" class="btn bg-gradient-success mb-0">
+                                    Terima Nego
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
+                    @if($b->status_hasil === 'proses' && $bolehKelolaHasil)
+                        <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                              method="POST"
+                              class="w-100 mb-3">
+                            @csrf
+                            @method('PUT')
+
+                            <input type="hidden" name="aksi" value="selesai_breeding">
+
+                            <h6 class="mb-3">Data Anak Hasil Breeding</h6>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <input type="text"
+                                           name="nama_anak"
+                                           class="form-control"
+                                           placeholder="Nama anak kuda">
+                                </div>
+
+                                <div class="col-md-4 mb-2">
+                                    <input type="text"
+                                           name="jenis_kuda"
+                                           class="form-control"
+                                           placeholder="Jenis kuda">
+                                </div>
+
+                                <div class="col-md-4 mb-2">
+                                    <input type="date"
+                                           name="perkiraan_kelahiran"
+                                           class="form-control">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn bg-gradient-success w-100 mb-0 mt-2">
+                                Tandai Selesai dan Hold Anak
                             </button>
                         </form>
 
                         <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
                               method="POST"
-                              style="display:inline;">
+                              class="d-flex justify-content-end">
                             @csrf
                             @method('PUT')
 
                             <input type="hidden" name="aksi" value="gagal">
 
-                            <button class="btn bg-gradient-danger">
+                            <button type="submit" class="btn bg-gradient-danger mb-0">
                                 Tandai Gagal
                             </button>
                         </form>
                     @endif
+
+                    @if($b->status_hasil === 'menunggu_konfirmasi_anak' && $isPengaju)
+                        <form action="{{ route('kawin-silang.update', $b->id_breeding) }}"
+                              method="POST"
+                              class="d-flex justify-content-end">
+                            @csrf
+                            @method('PUT')
+
+                            <input type="hidden" name="aksi" value="konfirmasi_anak">
+
+                            <button type="submit" class="btn bg-gradient-success mb-0">
+                                Terima Anak Kuda
+                            </button>
+                        </form>
+                    @endif
+
                 </div>
 
             </div>
@@ -316,6 +577,15 @@
 
     .modal-backdrop {
         z-index: 99998 !important;
+    }
+
+    .modal-footer .form-control {
+        border: 1px solid #d2d6da;
+        padding: 0.625rem 0.75rem;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
     }
 </style>
 

@@ -20,6 +20,7 @@ class KawinSilang extends Model
         'id_pemilik_jantan',
         'id_betina',
         'id_jantan',
+        'id_anak',
     ];
 
     public function kudaBetina()
@@ -30,6 +31,11 @@ class KawinSilang extends Model
     public function kudaJantan()
     {
         return $this->belongsTo(Kuda::class, 'id_jantan', 'id_kuda');
+    }
+
+    public function anak()
+    {
+        return $this->belongsTo(Kuda::class, 'id_anak', 'id_kuda');
     }
 
     public function pemilikBetina()
@@ -45,5 +51,10 @@ class KawinSilang extends Model
     public function pengaju()
     {
         return $this->belongsTo(User::class, 'id_pengaju', 'id_user');
+    }
+
+    public function penawaran()
+    {
+        return $this->hasOne(PenawaranBreeding::class, 'id_breeding', 'id_breeding');
     }
 }
