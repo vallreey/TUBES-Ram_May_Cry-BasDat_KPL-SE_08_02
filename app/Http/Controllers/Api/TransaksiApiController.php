@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kuda;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,8 +58,12 @@ class TransaksiApiController extends Controller
     public function store(Request $request)
     {
         try {
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
             // Memvalidasi data transaksi sebelum disimpan
             $validated = $this->validateTransaksiData($request);
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -66,7 +71,7 @@ class TransaksiApiController extends Controller
 
         // Menyimpan data transaksi baru
         $transaksi = Transaksi::create([
-            'status_transaksi' => $validated['status_transaksi'] ?? 'pending',
+            'status_transaksi' => $validated['status_transaksi'] ?? Transaksi::STATUS_PENDING,
             'tgl_transaksi' => $validated['tgl_transaksi'] ?? now(),
             'harga_final' => $validated['harga_final'],
             'id_kuda' => $validated['id_kuda'],
@@ -94,8 +99,12 @@ class TransaksiApiController extends Controller
         }
 
         try {
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
             // Memvalidasi data transaksi yang akan diperbarui
             $validated = $this->validateTransaksiUpdateData($request);
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -105,8 +114,10 @@ class TransaksiApiController extends Controller
         DB::transaction(function () use ($transaksi, $validated) {
             $transaksi->update($validated);
 
-            if (($validated['status_transaksi'] ?? null) === 'selesai' && $transaksi->kuda) {
-                $transaksi->kuda->update(['status_jual' => 'terjual']);
+            if (($validated['status_transaksi'] ?? null) === Transaksi::STATUS_SELESAI && $transaksi->kuda) {
+                $transaksi->kuda->update([
+                    'status_jual' => Kuda::STATUS_TERJUAL,
+                ]);
             }
         });
 
@@ -143,7 +154,14 @@ class TransaksiApiController extends Controller
             'id_pembeli' => 'required|exists:users,id_user',
             'id_penjual' => 'required|exists:users,id_user',
             'harga_final' => 'required|numeric|min:0',
-            'status_transaksi' => 'nullable|in:pending,selesai,dibatalkan',
+            'status_transaksi' => [
+                'nullable',
+                Rule::in([
+                    Transaksi::STATUS_PENDING,
+                    Transaksi::STATUS_SELESAI,
+                    Transaksi::STATUS_DIBATALKAN,
+                ]),
+            ],
             'tgl_transaksi' => 'nullable|date',
         ]);
     }
@@ -152,7 +170,15 @@ class TransaksiApiController extends Controller
     {
         // Validasi untuk memperbarui data transaksi
         return $request->validate([
-            'status_transaksi' => ['sometimes', 'required', Rule::in(['pending', 'selesai', 'dibatalkan'])],
+            'status_transaksi' => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    Transaksi::STATUS_PENDING,
+                    Transaksi::STATUS_SELESAI,
+                    Transaksi::STATUS_DIBATALKAN,
+                ]),
+            ],
             'tgl_transaksi' => 'nullable|date',
             'harga_final' => 'sometimes|required|numeric|min:0',
             'id_kuda' => 'sometimes|required|exists:kuda,id_kuda',

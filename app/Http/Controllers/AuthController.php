@@ -65,13 +65,16 @@ class AuthController extends Controller
         // Mengambil role dari query string
         $role = $request->query('role');
 
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Menampilkan form register pembeli
-        if ($role === 'pembeli') {
+        if ($role === User::ROLE_PEMBELI) {
             return view('auth.register-pembeli');
         }
 
         // Menampilkan form register peternak
-        if ($role === 'peternak') {
+        if ($role === User::ROLE_PETERNAK) {
+            // staging
             return view('auth.register-peternak');
         }
 
@@ -81,8 +84,12 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Memvalidasi data registrasi
         $validated = $this->validateRegisterData($request);
+
+        // staging
 
         // Membuat akun user baru
         $user = User::create([
@@ -94,8 +101,12 @@ class AuthController extends Controller
             'password'     => Hash::make($validated['password']),
         ]);
 
+        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
         // Membuat data peternakan jika user mendaftar sebagai peternak
-        if ($validated['role'] === 'peternak') {
+        if ($validated['role'] === User::ROLE_PETERNAK) {
+            // staging
+
             Peternakan::create([
                 'nama_peternakan'   => $validated['nama_peternakan'],
                 'kapasitas_kandang' => $validated['kapasitas_kandang'],
@@ -129,7 +140,7 @@ class AuthController extends Controller
     {
         // Mengecek apakah route API berhasil dijalankan
         return response()->json([
-            'message' => 'API berhasil jalan'
+            'message' => 'API berhasil jalan',
         ]);
     }
 
@@ -141,7 +152,7 @@ class AuthController extends Controller
             'email'        => 'required|email|unique:users,email',
             'no_telp'      => 'nullable|string|max:15',
             'alamat'       => 'nullable|string',
-            'role'         => 'required|in:pembeli,peternak',
+            'role'         => 'required|in:' . User::ROLE_PEMBELI . ',' . User::ROLE_PETERNAK,
             'password'     => 'required|min:8|confirmed',
         ];
 
@@ -159,7 +170,7 @@ class AuthController extends Controller
         ];
 
         // Menambahkan validasi khusus jika role adalah peternak
-        if ($request->input('role') === 'peternak') {
+        if ($request->input('role') === User::ROLE_PETERNAK) {
             $rules['nama_peternakan']   = 'required|string|max:100';
             $rules['kapasitas_kandang'] = 'required|integer|min:0';
             $rules['lokasi_map']        = 'nullable|string|max:255';

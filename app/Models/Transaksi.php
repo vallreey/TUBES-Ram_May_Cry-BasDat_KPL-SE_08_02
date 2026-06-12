@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaksi extends Model
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_PROSES = 'proses';
+    public const STATUS_SELESAI = 'selesai';
+    public const STATUS_DIBATALKAN = 'dibatalkan';
+    
     protected $table = 'transaksi';
     protected $primaryKey = 'id_transaksi';
 

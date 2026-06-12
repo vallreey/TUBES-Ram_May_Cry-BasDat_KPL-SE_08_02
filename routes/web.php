@@ -10,9 +10,7 @@ use App\Http\Controllers\KawinSilangController;
 use App\Http\Controllers\LisensiController;
 use App\Http\Controllers\UserController;
 
-// -------------------------------------------------------
 // Landing Page sebelum login
-// -------------------------------------------------------
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
@@ -21,9 +19,7 @@ Route::get('/', function () {
     return view('landing');
 })->name('landing');
 
-// -------------------------------------------------------
 // Auth (tidak perlu login)
-// -------------------------------------------------------
 Route::middleware('guest')->group(function () {
     Route::get('/testapi', [AuthController::class, 'testApi']);
 
@@ -34,16 +30,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 });
 
-// -------------------------------------------------------
 // Logout
-// -------------------------------------------------------
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// -------------------------------------------------------
 // Halaman yang butuh login
-// -------------------------------------------------------
 Route::middleware('auth')->group(function () {
-
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
@@ -54,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/kuda/terjual', [KudaController::class, 'terjual'])->name('kuda.terjual');
     Route::get('/kuda/breeding', [KudaController::class, 'breeding'])->name('kuda.breeding');
 
+    // Resource route
     Route::resource('kuda', KudaController::class);
     Route::resource('peternakan', PeternakanController::class);
     Route::resource('transaksi', TransaksiController::class);

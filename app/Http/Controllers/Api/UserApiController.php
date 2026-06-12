@@ -39,8 +39,12 @@ class UserApiController extends Controller
     public function store(Request $request)
     {
         try {
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
             // Memvalidasi data user sebelum disimpan
             $validated = $this->validateUserData($request);
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -67,8 +71,12 @@ class UserApiController extends Controller
         }
 
         try {
+            // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+
             // Memvalidasi data user yang akan diperbarui
             $validated = $this->validateUserUpdateData($request, $user);
+
+            // staging
         } catch (ValidationException $e) {
             // Mengembalikan error jika validasi gagal
             return $this->errorResponse('Validasi gagal', 422, $e->errors());
@@ -113,7 +121,14 @@ class UserApiController extends Controller
             'email' => 'required|email|unique:users,email',
             'no_telp' => 'nullable|string|max:15',
             'alamat' => 'nullable|string',
-            'role' => 'required|in:admin,pembeli,peternak',
+            'role' => [
+                'required',
+                Rule::in([
+                    User::ROLE_ADMIN,
+                    User::ROLE_PEMBELI,
+                    User::ROLE_PETERNAK,
+                ]),
+            ],
             'password' => 'required|string|min:8',
         ]);
     }
@@ -131,7 +146,15 @@ class UserApiController extends Controller
             ],
             'no_telp' => 'nullable|string|max:15',
             'alamat' => 'nullable|string',
-            'role' => 'sometimes|required|in:admin,pembeli,peternak',
+            'role' => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    User::ROLE_ADMIN,
+                    User::ROLE_PEMBELI,
+                    User::ROLE_PETERNAK,
+                ]),
+            ],
             'password' => 'nullable|string|min:8',
         ]);
     }
