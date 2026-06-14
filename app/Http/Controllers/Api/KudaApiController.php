@@ -143,6 +143,13 @@ class KudaApiController extends Controller
         return $request->validate([
             'nama_kuda' => 'required|string|max:100',
             'jenis_kuda' => 'required|string|max:100',
+            'gender' => [
+                'required',
+                Rule::in([
+                    Kuda::GENDER_JANTAN,
+                    Kuda::GENDER_BETINA,
+                ]),
+            ],
             'status_jual' => [
                 'required',
                 Rule::in([
@@ -164,6 +171,14 @@ class KudaApiController extends Controller
         return $request->validate([
             'nama_kuda' => 'sometimes|required|string|max:100',
             'jenis_kuda' => 'sometimes|required|string|max:100',
+            'gender' => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    Kuda::GENDER_JANTAN,
+                    Kuda::GENDER_BETINA,
+                ]),
+            ],
             'status_jual' => [
                 'sometimes',
                 'required',

@@ -101,6 +101,7 @@ class KudaController extends Controller
         $kuda = Kuda::create([
             'nama_kuda'     => $validated['nama_kuda'],
             'jenis_kuda'    => $validated['jenis_kuda'],
+            'gender'        => $validated['gender'],
             'status_jual'   => $validated['status_jual'],
             'harga_buka'    => $validated['harga_buka'],
             'id_peternakan' => $peternakan->id_peternakan,
@@ -335,6 +336,7 @@ class KudaController extends Controller
         return $request->validate([
             'nama_kuda'   => 'required|string|max:100',
             'jenis_kuda'  => 'required|string|max:50',
+            'gender'      => 'required|in:jantan,betina',
             'status_jual' => 'required|in:tersedia,terjual,breeding',
             'harga_buka'  => 'required|numeric|min:0',
             'id_ibu'      => 'nullable|exists:kuda,id_kuda',

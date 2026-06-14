@@ -29,13 +29,23 @@
 
                     <div class="alert alert-info text-white text-sm">
                         @if($sebagai === 'betina')
-                            Kuda yang Anda pilih akan menjadi calon ibu.
-                            Kuda tujuan akan dianggap sebagai calon ayah.
+                            Kuda saya yang tampil hanya betina. Kuda tujuan yang tampil hanya jantan dari peternak lain.
                         @else
-                            Kuda yang Anda pilih akan menjadi calon ayah.
-                            Kuda tujuan akan dianggap sebagai calon ibu.
+                            Kuda saya yang tampil hanya jantan. Kuda tujuan yang tampil hanya betina dari peternak lain.
                         @endif
                     </div>
+
+                    @if($kudaSaya->isEmpty())
+                        <div class="alert alert-warning text-white text-sm">
+                            Belum ada kuda {{ $sebagai }} yang tersedia untuk diajukan.
+                        </div>
+                    @endif
+
+                    @if($peternakan->isEmpty())
+                        <div class="alert alert-warning text-white text-sm">
+                            Belum ada peternakan tujuan yang memiliki kuda {{ $genderTujuan }} tersedia.
+                        </div>
+                    @endif
 
                     <label class="form-label">Kuda Saya</label>
                     <div class="input-group input-group-outline mb-3">
@@ -45,6 +55,7 @@
                             @foreach($kudaSaya as $k)
                                 <option value="{{ $k->id_kuda }}">
                                     {{ $k->nama_kuda }}
+                                    - {{ ucfirst($k->gender ?? '-') }}
                                     -
                                     {{ $k->peternakan->nama_peternakan ?? 'Kuda Milik Pembeli' }}
                                 </option>
@@ -86,9 +97,9 @@
                                         {{ $k->nama_kuda }}
                                         -
                                         @if($sebagai === 'betina')
-                                            Calon Ayah
+                                            Calon Ayah / Jantan
                                         @else
-                                            Calon Ibu
+                                            Calon Ibu / Betina
                                         @endif
                                         -
                                         {{ $p->nama_peternakan }}

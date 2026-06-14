@@ -208,7 +208,48 @@
             @if($kuda->lisensi->catatan_admin)
               <p class="text-sm text-secondary mt-1 mb-0">Catatan admin: {{ $kuda->lisensi->catatan_admin }}</p>
             @endif
-          @endif
+
+          <label class="form-label">Jenis Kuda</label>
+          <div class="input-group input-group-outline mb-3">
+            <input type="text"
+                   name="jenis_kuda"
+                   class="form-control"
+                   placeholder="Jenis Kuda"
+                   value="{{ old('jenis_kuda', $kuda->jenis_kuda) }}"
+                   required>
+          </div>
+
+          <label class="form-label">Gender Kuda</label>
+          <div class="input-group input-group-outline mb-3">
+            <select name="gender" class="form-control" required>
+              <option value="">Pilih Gender</option>
+              <option value="jantan" {{ old('gender', $kuda->gender) == 'jantan' ? 'selected' : '' }}>Jantan</option>
+              <option value="betina" {{ old('gender', $kuda->gender) == 'betina' ? 'selected' : '' }}>Betina</option>
+            </select>
+          </div>
+
+          <label class="form-label">Status Jual</label>
+          <div class="input-group input-group-outline mb-3">
+            <select name="status_jual" class="form-control" required>
+              <option value="">Pilih Status Jual</option>
+              <option value="tersedia" {{ old('status_jual', $kuda->status_jual) == 'tersedia' ? 'selected' : '' }}>
+                Tersedia
+              </option>
+              <option value="terjual" {{ old('status_jual', $kuda->status_jual) == 'terjual' ? 'selected' : '' }}>
+                Terjual
+              </option>
+            </select>
+          </div>
+
+          <label class="form-label">Harga Buka</label>
+          <div class="input-group input-group-outline mb-3">
+            <input type="number"
+                   name="harga_buka"
+                   class="form-control"
+                   placeholder="Harga Buka"
+                   value="{{ old('harga_buka', $kuda->harga_buka) }}"
+                   required>
+          </div>
 
           <div class="d-flex justify-content-end gap-2 mt-4">
             <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">Batal</a>
