@@ -1,7 +1,7 @@
 @extends('layouts.material')
 
-@section('title', 'Data Kuda')
-@section('breadcrumb', 'Data Kuda')
+@section('title', 'Marketplace')
+@section('breadcrumb', 'Marketplace')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('material/css/lib_sendiri/kuda-toolbar.css') }}">
@@ -22,34 +22,47 @@
             <div class="card-header pb-0">
                 <div class="d-flex justify-content-between align-items-start flex-wrap kuda-card-header">
                     <div>
-                        <h6 class="mb-1">Data Kuda</h6>
-                        <p class="text-sm mb-0">
-                            Data master kuda, peternakan, status, dan detail lisensi
-                        </p>
+                        <h6 class="mb-1">Marketplace Kuda</h6>
+                        <p class="text-sm mb-0">Daftar kuda yang tersedia dan sudah terjual</p>
                     </div>
 
                     @include('admin.partials.kuda-search-box', [
-                        'action' => route('kuda.index'),
+                        'action' => url()->current(),
                     ])
                 </div>
             </div>
 
             <div class="px-4 pt-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 kuda-toolbar-row pt-3">
-                    @include('admin.partials.kuda-filter-dropdown', [
-                        'action' => route('kuda.index'),
-                    ])
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('marketplace.index', request()->only(['search', 'gender', 'sort'])) }}"
+                           class="btn btn-sm {{ $page === 'tersedia' ? 'bg-gradient-success text-white' : 'btn-outline-success' }} mb-0">
+                            Kuda Tersedia
+                        </a>
 
-                    @if($hasActiveQuery)
-                        <div class="text-end">
-                            <p class="text-xs text-secondary mb-1">
-                                Menampilkan {{ $kuda->count() }} data berdasarkan search/filter.
-                            </p>
-                            <a href="{{ route('kuda.index') }}" class="btn btn-sm btn-outline-secondary mb-0">
-                                Reset Semua
-                            </a>
-                        </div>
-                    @endif
+                        <a href="{{ route('marketplace.terjual', request()->only(['search', 'gender', 'sort'])) }}"
+                           class="btn btn-sm {{ $page === 'terjual' ? 'bg-gradient-danger text-white' : 'btn-outline-danger' }} mb-0">
+                            Kuda Terjual
+                        </a>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                        @if($hasActiveQuery)
+                            <div class="text-end me-1">
+                                <p class="text-xs text-secondary mb-1">
+                                    Menampilkan {{ $kuda->count() }} data berdasarkan search/filter.
+                                </p>
+                                <a href="{{ url()->current() }}" class="btn btn-sm btn-outline-secondary mb-0">
+                                    Reset Semua
+                                </a>
+                            </div>
+                        @endif
+
+                        @include('admin.partials.kuda-filter-dropdown', [
+                            'action' => url()->current(),
+                            'menuAlignment' => 'dropdown-menu-end',
+                        ])
+                    </div>
                 </div>
             </div>
 
@@ -138,66 +151,15 @@
                                         <button
                                             class="btn btn-sm bg-gradient-dark mb-0"
                                             data-bs-toggle="modal"
-                                            data-bs-target="#detailKuda{{ $item->id_kuda }}">
+                                            data-bs-target="#detailMarketplace{{ $item->id_kuda }}">
                                             View Detail
                                         </button>
-
-                                        @php
-                                            $user = auth()->user();
-                                            $bolehKelola = false;
-                                            $bolehEditNamaPembeli = false;
-
-                                            if ($user->role === 'admin') {
-                                                $bolehKelola = true;
-                                            } elseif (
-                                                $user->role === 'peternak'
-                                                && $item->peternakan
-                                                && $item->peternakan->id_user === $user->id_user
-                                                && $item->status_jual !== 'terjual'
-                                            ) {
-                                                $bolehKelola = true;
-                                            } elseif ($user->role === 'pembeli') {
-                                                $transaksiPembeli = $item->transaksi
-                                                    ->where('id_pembeli', $user->id_user)
-                                                    ->where('status_transaksi', 'selesai')
-                                                    ->first();
-
-                                                if ($transaksiPembeli) {
-                                                    if (!$item->lisensi) {
-                                                        $bolehEditNamaPembeli = true;
-                                                    } elseif ($item->lisensi && $transaksiPembeli->id_lisensi !== null) {
-                                                        $bolehEditNamaPembeli = true;
-                                                    }
-                                                }
-                                            }
-                                        @endphp
-
-                                        @if($bolehKelola)
-                                            <a href="{{ route('kuda.edit', $item->id_kuda) }}"
-                                               class="btn btn-sm btn-light mb-0">
-                                                Edit
-                                            </a>
-
-                                            <button type="button"
-                                                    class="btn btn-sm bg-gradient-danger mb-0"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#hapusKuda{{ $item->id_kuda }}">
-                                                Hapus
-                                            </button>
-                                        @endif
-
-                                        @if($bolehEditNamaPembeli)
-                                            <a href="{{ route('kuda.edit', $item->id_kuda) }}"
-                                               class="btn btn-sm bg-gradient-info mb-0">
-                                                Edit Nama
-                                            </a>
-                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="8" class="text-center text-sm py-4">
-                                        Belum ada data kuda
+                                        Belum ada data kuda di marketplace
                                     </td>
                                 </tr>
                             @endforelse
@@ -213,7 +175,7 @@
 
 @foreach($kuda as $item)
 
-    <div class="modal fade" id="detailKuda{{ $item->id_kuda }}" tabindex="-1">
+    <div class="modal fade" id="detailMarketplace{{ $item->id_kuda }}" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
 
@@ -249,6 +211,36 @@
                     @else
                         <p class="text-sm text-secondary">Lisensi belum tersedia.</p>
                     @endif
+
+                    @if(auth()->user()->role === 'pembeli' && $page === 'tersedia' && $item->status_jual === 'tersedia')
+
+                        <hr>
+
+                        <h6>Pembelian Kuda</h6>
+
+                        <form action="{{ route('transaksi.store') }}" method="POST">
+                            @csrf
+
+                            <input type="hidden" name="id_kuda" value="{{ $item->id_kuda }}">
+
+                            @if($item->lisensi)
+                                <label class="form-label">Pilihan Pembelian</label>
+
+                                <select name="pakai_lisensi" class="form-control" required>
+                                    <option value="">Pilih Opsi Pembelian</option>
+                                    <option value="1">Beli dengan lisensi</option>
+                                    <option value="0">Beli tanpa lisensi</option>
+                                </select>
+                            @else
+                                <input type="hidden" name="pakai_lisensi" value="0">
+                            @endif
+
+                            <button type="submit" class="btn bg-gradient-success mt-3 mb-0">
+                                Ajukan Pembelian
+                            </button>
+                        </form>
+
+                    @endif
                 </div>
 
                 <div class="modal-footer">
@@ -260,60 +252,7 @@
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="hapusKuda{{ $item->id_kuda }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <p class="text-sm mb-0">
-                        Apakah kamu yakin ingin menghapus kuda
-                        <strong>{{ $item->nama_kuda }}</strong>?
-                    </p>
-
-                    <p class="text-xs text-secondary mb-0 mt-2">
-                        Data yang sudah dihapus tidak bisa dikembalikan.
-                    </p>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button"
-                            class="btn btn-light"
-                            data-bs-dismiss="modal">
-                        Batal
-                    </button>
-
-                    <form action="{{ route('kuda.destroy', $item->id_kuda) }}"
-                          method="POST">
-                        @csrf
-                        @method('DELETE')
-
-                        <button type="submit"
-                                class="btn bg-gradient-danger">
-                            Ya, Hapus
-                        </button>
-                    </form>
-                </div>
-
-            </div>
-        </div>
-    </div>
 @endforeach
-
-
-@if(auth()->user()->role !== 'pembeli')
-    <div class="position-fixed bottom-0 end-0 m-4" style="z-index: 999;">
-        <a href="{{ route('kuda.create') }}"
-           class="btn bg-gradient-dark shadow-dark">
-            + Tambah Kuda
-        </a>
-    </div>
-@endif
 
 <style>
     .modal {

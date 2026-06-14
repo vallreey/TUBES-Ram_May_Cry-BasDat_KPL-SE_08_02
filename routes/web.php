@@ -7,6 +7,7 @@ use App\Http\Controllers\KudaController;
 use App\Http\Controllers\PeternakanController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\KawinSilangController;
+use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\LisensiController;
 use App\Http\Controllers\UserController;
 
@@ -40,10 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
-    // Custom route kuda harus di atas resource
-    Route::get('/kuda/tersedia', [KudaController::class, 'tersedia'])->name('kuda.tersedia');
-    Route::get('/kuda/terjual', [KudaController::class, 'terjual'])->name('kuda.terjual');
-    Route::get('/kuda/breeding', [KudaController::class, 'breeding'])->name('kuda.breeding');
+    // Marketplace dipisah dari data kuda agar data kuda tetap menjadi data master
+    Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
+    Route::get('/marketplace/terjual', [MarketplaceController::class, 'terjual'])->name('marketplace.terjual');
 
     // Resource route
     Route::resource('kuda', KudaController::class);

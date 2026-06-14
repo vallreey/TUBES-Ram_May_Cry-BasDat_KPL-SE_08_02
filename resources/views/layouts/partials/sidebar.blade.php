@@ -52,6 +52,19 @@
         </a>
         </li>
 
+      {{-- Marketplace --}}
+        <li class="nav-item">
+        <a class="nav-link {{ request()->routeIs('marketplace.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"
+            href="{{ route('marketplace.index') }}">
+
+            <i class="material-symbols-rounded {{ request()->routeIs('marketplace.*') ? 'text-white' : 'text-dark' }}">
+            storefront
+            </i>
+
+            <span class="nav-link-text ms-1">Marketplace</span>
+        </a>
+        </li>
+
       {{-- Peternakan --}}
         <li class="nav-item">
         <a class="nav-link {{ request()->routeIs('peternakan.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}"

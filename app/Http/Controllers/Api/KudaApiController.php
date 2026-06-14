@@ -27,18 +27,46 @@ class KudaApiController extends Controller
             $query->where('id_peternakan', $request->id_peternakan);
         }
 
-        // Mencari data kuda berdasarkan nama atau jenis
+        // Filter data kuda berdasarkan gender
+        if ($request->filled('gender') && in_array($request->gender, [Kuda::GENDER_JANTAN, Kuda::GENDER_BETINA], true)) {
+            $query->where('gender', $request->gender);
+        }
+
+        // Mencari data kuda berdasarkan nama, jenis, atau peternakan
         if ($request->filled('search')) {
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
                 $q->where('nama_kuda', 'like', "%{$search}%")
-                  ->orWhere('jenis_kuda', 'like', "%{$search}%");
+                  ->orWhere('jenis_kuda', 'like', "%{$search}%")
+                  ->orWhereHas('peternakan', function ($peternakanQuery) use ($search) {
+                      $peternakanQuery->where('nama_peternakan', 'like', "%{$search}%");
+                  });
             });
         }
 
+        // Sorting data kuda
+        switch ($request->input('sort', 'terbaru')) {
+            case 'nama_asc':
+                $query->orderBy('nama_kuda', 'asc');
+                break;
+
+            case 'nama_desc':
+                $query->orderBy('nama_kuda', 'desc');
+                break;
+
+            case 'terlama':
+                $query->orderBy('created_at', 'asc');
+                break;
+
+            case 'terbaru':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
         // Mengambil data kuda dengan pagination
-        $kuda = $query->latest()->paginate(10);
+        $kuda = $query->paginate(10)->withQueryString();
 
         // Mengembalikan response data kuda
         return $this->successResponse($kuda, 'Data kuda berhasil diambil');
