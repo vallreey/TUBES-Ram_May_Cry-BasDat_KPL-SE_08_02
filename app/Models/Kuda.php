@@ -15,6 +15,7 @@ class Kuda extends Model
     protected $fillable = [
         'nama_kuda',
         'jenis_kuda',
+        'gender',
         'status_jual',
         'harga_buka',
         'id_peternakan',
@@ -26,8 +27,9 @@ class Kuda extends Model
     public const STATUS_TERJUAL = 'terjual';
     public const STATUS_BREEDING = 'breeding';
 
-    use HasFactory;
-    
+    public const GENDER_JANTAN = 'jantan';
+    public const GENDER_BETINA = 'betina';
+
     public function peternakan()
     {
         return $this->belongsTo(

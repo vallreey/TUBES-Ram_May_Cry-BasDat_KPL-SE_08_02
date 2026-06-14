@@ -49,6 +49,7 @@
                             <tr>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Kuda</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jenis Kuda</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Gender Kuda</th>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Peternakan</th>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status Jual</th>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Harga Buka</th>
@@ -78,6 +79,15 @@
                                         <p class="text-sm font-weight-bold mb-0">
                                             {{ $item->jenis_kuda ?? '-' }}
                                         </p>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @php
+                                            $genderBadge = $item->gender === 'jantan' ? 'info' : 'warning';
+                                        @endphp
+                                        <span class="badge badge-sm bg-gradient-{{ $genderBadge }}">
+                                            {{ ucfirst($item->gender ?? '-') }}
+                                        </span>
                                     </td>
 
                                     <td class="text-center">
@@ -190,7 +200,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-sm py-4">
+                                    <td colspan="7" class="text-center text-sm py-4">
                                         Belum ada data kuda
                                     </td>
                                 </tr>
@@ -225,6 +235,7 @@
 
                     <p class="text-sm mb-1"><strong>Nama:</strong> {{ $item->nama_kuda }}</p>
                     <p class="text-sm mb-1"><strong>Jenis:</strong> {{ $item->jenis_kuda ?? '-' }}</p>
+                    <p class="text-sm mb-1"><strong>Gender:</strong> {{ ucfirst($item->gender ?? '-') }}</p>
                     <p class="text-sm mb-1"><strong>Status:</strong> {{ ucfirst($item->status_jual) }}</p>
                     <p class="text-sm mb-1"><strong>Harga:</strong> Rp {{ number_format($item->harga_buka ?? 0, 0, ',', '.') }}</p>
                     <p class="text-sm mb-3"><strong>Peternakan:</strong> {{ $item->peternakan->nama_peternakan ?? '-' }}</p>

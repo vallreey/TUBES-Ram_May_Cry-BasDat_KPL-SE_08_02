@@ -34,6 +34,15 @@
                    required>
           </div>
 
+          <label class="form-label">Gender Kuda</label>
+          <div class="input-group input-group-outline mb-3">
+            <select name="gender" class="form-control" required>
+              <option value="">Pilih Gender</option>
+              <option value="jantan" {{ old('gender') == 'jantan' ? 'selected' : '' }}>Jantan</option>
+              <option value="betina" {{ old('gender') == 'betina' ? 'selected' : '' }}>Betina</option>
+            </select>
+          </div>
+
           <label class="form-label">Status Jual</label>
           <div class="input-group input-group-outline mb-3">
             <select name="status_jual" class="form-control" required>
@@ -51,24 +60,6 @@
                    placeholder="Harga Buka"
                    value="{{ old('harga_buka') }}"
                    required>
-          </div>
-
-          <label class="form-label">ID Ibu</label>
-          <div class="input-group input-group-outline mb-3">
-            <input type="number"
-                   name="id_ibu"
-                   class="form-control"
-                   placeholder="ID Ibu"
-                   value="{{ old('id_ibu') }}">
-          </div>
-
-          <label class="form-label">ID Ayah</label>
-          <div class="input-group input-group-outline mb-3">
-            <input type="number"
-                   name="id_ayah"
-                   class="form-control"
-                   placeholder="ID Ayah"
-                   value="{{ old('id_ayah') }}">
           </div>
 
           <div class="d-flex justify-content-end gap-2 mt-4">

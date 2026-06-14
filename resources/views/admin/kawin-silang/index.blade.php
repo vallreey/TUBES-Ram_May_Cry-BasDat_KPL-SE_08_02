@@ -326,6 +326,8 @@
                         <p class="text-sm mb-1">
                             <strong>Jenis:</strong>
                             {{ $b->anak->jenis_kuda ?? '-' }}
+                            <br>
+                            <span class="text-xs text-secondary">Gender Anak: {{ ucfirst($b->anak->gender ?? '-') }}</span>
                         </p>
 
                         <p class="text-sm mb-1">
@@ -520,6 +522,14 @@
                                            name="jenis_kuda"
                                            class="form-control"
                                            placeholder="Jenis kuda">
+                                </div>
+
+                                <div class="col-md-4 mb-2">
+                                    <select name="gender_anak" class="form-control" required>
+                                        <option value="">Gender anak</option>
+                                        <option value="jantan">Jantan</option>
+                                        <option value="betina">Betina</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-4 mb-2">

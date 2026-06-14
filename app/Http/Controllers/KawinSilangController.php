@@ -37,17 +37,23 @@ class KawinSilangController extends Controller
             return view('admin.kawin-silang.pilih-genderkuda');
         }
 
-        // Mengambil kuda milik user
-        $kudaSaya = $this->getKudaMilikUser($user);
+        // Menentukan gender kuda tujuan yang harus berlawanan dengan kuda pengaju
+        $genderTujuan = $sebagai === Kuda::GENDER_BETINA
+            ? Kuda::GENDER_JANTAN
+            : Kuda::GENDER_BETINA;
 
-        // Mengambil peternakan tujuan
-        $peternakan = $this->getPeternakanTujuan($user);
+        // Mengambil kuda milik user sesuai pilihan gender pengajuan
+        $kudaSaya = $this->getKudaMilikUser($user, $sebagai);
+
+        // Mengambil peternakan tujuan yang hanya memiliki kuda lawan gender
+        $peternakan = $this->getPeternakanTujuan($user, $genderTujuan);
 
         // Menampilkan form pengajuan
         return view('admin.kawin-silang.create', compact(
             'kudaSaya',
             'peternakan',
-            'sebagai'
+            'sebagai',
+            'genderTujuan'
         ));
     }
 
@@ -73,6 +79,18 @@ class KawinSilangController extends Controller
         // Mencegah memilih kuda yang sama
         if ($kudaSaya->id_kuda === $kudaTujuan->id_kuda) {
             return back()->with('error', 'Kuda tujuan tidak boleh sama dengan kuda sendiri.');
+        }
+
+        // Mencegah peternak memilih kuda tujuan dari peternakannya sendiri
+        if ($user->role === 'peternak'
+            && $kudaTujuan->peternakan
+            && $kudaTujuan->peternakan->id_user === $user->id_user) {
+            return back()->with('error', 'Kuda tujuan harus berasal dari peternak lain.');
+        }
+
+        // Mengecek gender kuda pengaju dan kuda tujuan
+        if (!$this->isGenderKudaValid($validated['pengajuan_sebagai'], $kudaSaya, $kudaTujuan)) {
+            return back()->with('error', 'Gender kuda tidak sesuai. Jika kuda pengaju betina, kuda tujuan harus jantan. Jika kuda pengaju jantan, kuda tujuan harus betina.');
         }
 
         // Mengecek kuda tersedia untuk pengajuan
@@ -383,6 +401,7 @@ class KawinSilangController extends Controller
         $validated = $request->validate([
             'nama_anak'           => 'nullable|string|max:60',
             'jenis_kuda'          => 'nullable|string|max:50',
+            'gender_anak'         => 'required|in:jantan,betina',
             'perkiraan_kelahiran' => 'nullable|date',
         ]);
 
@@ -512,22 +531,24 @@ class KawinSilangController extends Controller
             ->get();
     }
 
-    private function getKudaMilikUser($user)
+    private function getKudaMilikUser($user, $gender)
     {
-        // Peternak mengambil kuda aktif dari peternakannya
+        // Peternak mengambil kuda aktif dari peternakannya sesuai gender pengajuan
         if ($user->role === 'peternak') {
             return Kuda::with('peternakan')
                 ->where('status_jual', 'tersedia')
+                ->where('gender', $gender)
                 ->whereHas('peternakan', function ($q) use ($user) {
                     $q->where('id_user', $user->id_user);
                 })
                 ->get();
         }
 
-        // Pembeli mengambil kuda dari transaksi selesai
+        // Pembeli mengambil kuda dari transaksi selesai sesuai gender pengajuan
         if ($user->role === 'pembeli') {
             return Kuda::with('peternakan')
                 ->where('status_jual', 'tersedia')
+                ->where('gender', $gender)
                 ->whereHas('transaksi', function ($q) use ($user) {
                     $q->where('id_pembeli', $user->id_user)
                       ->where('status_transaksi', 'selesai');
@@ -538,14 +559,19 @@ class KawinSilangController extends Controller
         return collect([]);
     }
 
-    private function getPeternakanTujuan($user)
+    private function getPeternakanTujuan($user, $genderTujuan)
     {
-        // Mengambil peternakan tujuan beserta kuda tersedia
-        return Peternakan::with(['user', 'kuda' => function ($q) {
-                $q->where('status_jual', 'tersedia');
+        // Mengambil peternakan tujuan beserta kuda tersedia yang gendernya berlawanan
+        return Peternakan::with(['user', 'kuda' => function ($q) use ($genderTujuan) {
+                $q->where('status_jual', 'tersedia')
+                  ->where('gender', $genderTujuan);
             }])
             ->when($user->role === 'peternak', function ($q) use ($user) {
                 $q->where('id_user', '!=', $user->id_user);
+            })
+            ->whereHas('kuda', function ($q) use ($genderTujuan) {
+                $q->where('status_jual', 'tersedia')
+                  ->where('gender', $genderTujuan);
             })
             ->latest()
             ->get();
@@ -579,6 +605,20 @@ class KawinSilangController extends Controller
         }
 
         return false;
+    }
+
+
+    private function isGenderKudaValid($sebagai, $kudaSaya, $kudaTujuan)
+    {
+        // Jika kuda pengaju betina, target harus jantan
+        if ($sebagai === Kuda::GENDER_BETINA) {
+            return $kudaSaya->gender === Kuda::GENDER_BETINA
+                && $kudaTujuan->gender === Kuda::GENDER_JANTAN;
+        }
+
+        // Jika kuda pengaju jantan, target harus betina
+        return $kudaSaya->gender === Kuda::GENDER_JANTAN
+            && $kudaTujuan->gender === Kuda::GENDER_BETINA;
     }
 
     private function isKudaTersediaUntukPengajuan($kudaSaya, $kudaTujuan)
@@ -621,6 +661,7 @@ class KawinSilangController extends Controller
         return Kuda::create([
             'nama_kuda'     => $validated['nama_anak'] ?? 'Anak Breeding #' . $breeding->id_breeding,
             'jenis_kuda'    => $validated['jenis_kuda'] ?? 'Hasil Kawin Silang',
+            'gender'        => $validated['gender_anak'] ?? Kuda::GENDER_JANTAN,
             'status_jual'   => 'hold',
             'harga_buka'    => $hargaAnak,
             'id_peternakan' => $peternakanPenerima->id_peternakan,
