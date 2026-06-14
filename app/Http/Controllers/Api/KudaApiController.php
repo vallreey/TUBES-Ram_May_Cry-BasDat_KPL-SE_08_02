@@ -102,7 +102,7 @@ class KudaApiController extends Controller
             // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
 
             // Memvalidasi data kuda yang akan diperbarui
-            $validated = $this->validateKudaUpdateData($request);
+            $validated = $this->validateKudaUpdateData($request, $kuda);
 
             // staging
         } catch (ValidationException $e) {
@@ -139,6 +139,8 @@ class KudaApiController extends Controller
 
     private function validateKudaData(Request $request)
     {
+        $idPeternakan = (int) $request->input('id_peternakan');
+
         // Validasi untuk menambah data kuda
         return $request->validate([
             'nama_kuda' => 'required|string|max:100',
@@ -160,13 +162,15 @@ class KudaApiController extends Controller
             ],
             'harga_buka' => 'required|numeric|min:0',
             'id_peternakan' => 'required|exists:peternakan,id_peternakan',
-            'id_ibu' => 'nullable|exists:kuda,id_kuda',
-            'id_ayah' => 'nullable|exists:kuda,id_kuda',
-        ]);
+            'id_ibu' => $this->getIndukRules($idPeternakan, Kuda::GENDER_BETINA),
+            'id_ayah' => $this->getIndukRules($idPeternakan, Kuda::GENDER_JANTAN),
+        ], $this->getIndukValidationMessages());
     }
 
-    private function validateKudaUpdateData(Request $request)
+    private function validateKudaUpdateData(Request $request, Kuda $kuda)
     {
+        $idPeternakan = (int) $request->input('id_peternakan', $kuda->id_peternakan);
+
         // Validasi untuk memperbarui data kuda
         return $request->validate([
             'nama_kuda' => 'sometimes|required|string|max:100',
@@ -190,8 +194,36 @@ class KudaApiController extends Controller
             ],
             'harga_buka' => 'sometimes|required|numeric|min:0',
             'id_peternakan' => 'sometimes|required|exists:peternakan,id_peternakan',
-            'id_ibu' => 'nullable|exists:kuda,id_kuda',
-            'id_ayah' => 'nullable|exists:kuda,id_kuda',
-        ]);
+            'id_ibu' => $this->getIndukRules($idPeternakan, Kuda::GENDER_BETINA, $kuda->id_kuda),
+            'id_ayah' => $this->getIndukRules($idPeternakan, Kuda::GENDER_JANTAN, $kuda->id_kuda),
+        ], $this->getIndukValidationMessages());
+    }
+
+    private function getIndukRules(int $idPeternakan, string $gender, ?int $exceptIdKuda = null): array
+    {
+        $rules = [
+            'nullable',
+            Rule::exists('kuda', 'id_kuda')->where(function ($query) use ($idPeternakan, $gender) {
+                return $query
+                    ->where('id_peternakan', $idPeternakan)
+                    ->where('gender', $gender);
+            }),
+        ];
+
+        if ($exceptIdKuda) {
+            $rules[] = Rule::notIn([$exceptIdKuda]);
+        }
+
+        return $rules;
+    }
+
+    private function getIndukValidationMessages(): array
+    {
+        return [
+            'id_ibu.exists'  => 'Ibu harus kuda betina dari peternakan sendiri.',
+            'id_ayah.exists' => 'Ayah harus kuda jantan dari peternakan sendiri.',
+            'id_ibu.not_in'  => 'Kuda tidak bisa menjadi ibu untuk dirinya sendiri.',
+            'id_ayah.not_in' => 'Kuda tidak bisa menjadi ayah untuk dirinya sendiri.',
+        ];
     }
 }

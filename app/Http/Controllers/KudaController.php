@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kuda;
-use App\Models\Lisensi;
 use App\Models\Peternakan;
 use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class KudaController extends Controller
 {
@@ -59,8 +59,20 @@ class KudaController extends Controller
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda karena tidak memiliki peternakan.');
         }
 
+        // Mengambil peternakan milik user agar pilihan ayah/ibu tidak mengambil kuda peternak lain
+        $peternakan = Peternakan::where('id_user', $user->id_user)->first();
+
+        if (!$peternakan) {
+            return redirect()
+                ->route('kuda.index')
+                ->with('error', 'Anda belum memiliki peternakan.');
+        }
+
+        $ayahOptions = $this->getKudaIndukOptions($peternakan->id_peternakan, Kuda::GENDER_JANTAN);
+        $ibuOptions = $this->getKudaIndukOptions($peternakan->id_peternakan, Kuda::GENDER_BETINA);
+
         // Menampilkan form tambah kuda
-        return view('admin.kuda.create');
+        return view('admin.kuda.create', compact('ayahOptions', 'ibuOptions'));
     }
 
     public function store(Request $request)
@@ -77,16 +89,6 @@ class KudaController extends Controller
                 ->with('error', 'Pembeli tidak bisa menambahkan kuda.');
         }
 
-        // Memvalidasi data kuda sebelum disimpan
-        $validated = $this->validateKudaData($request);
-
-        // Validasi nomor sertifikat jika sekaligus ajukan lisensi
-        if ($request->boolean('ajukan_lisensi')) {
-            $request->validate([
-                'nomor_sertifikat' => 'required|string|max:50|unique:lisensi,nomor_sertifikat',
-            ]);
-        }
-
         // Mengambil peternakan milik user
         $peternakan = Peternakan::where('id_user', $user->id_user)->first();
 
@@ -97,8 +99,12 @@ class KudaController extends Controller
                 ->with('error', 'Anda belum memiliki peternakan.');
         }
 
+        // Memvalidasi data kuda sebelum disimpan.
+        // id_ibu dan id_ayah harus berasal dari peternakan sendiri sesuai gendernya.
+        $validated = $this->validateKudaData($request, $peternakan->id_peternakan);
+
         // Menyimpan data kuda baru
-        $kuda = Kuda::create([
+        Kuda::create([
             'nama_kuda'     => $validated['nama_kuda'],
             'jenis_kuda'    => $validated['jenis_kuda'],
             'gender'        => $validated['gender'],
@@ -108,25 +114,6 @@ class KudaController extends Controller
             'id_ibu'        => $validated['id_ibu'] ?? null,
             'id_ayah'       => $validated['id_ayah'] ?? null,
         ]);
-
-        // Menyimpan pengajuan lisensi jika diminta
-        if ($request->boolean('ajukan_lisensi') && $request->filled('nomor_sertifikat')) {
-            Lisensi::create([
-                'nomor_sertifikat'  => $request->nomor_sertifikat,
-                'penerbit'          => $request->penerbit,
-                'tgl_terbit'        => $request->tgl_terbit,
-                'masa_berlaku'      => $request->masa_berlaku,
-                'keaslian_ras'      => $request->keaslian_ras,
-                'riwayat_kesehatan' => $request->riwayat_kesehatan,
-                'id_kuda'           => $kuda->id_kuda,
-                'status'            => Lisensi::STATUS_PENDING,
-                'id_pengaju'        => $user->id_user,
-            ]);
-
-            return redirect()
-                ->route('kuda.index')
-                ->with('success', 'Data kuda berhasil ditambahkan dan lisensi diajukan, menunggu persetujuan admin.');
-        }
 
         return redirect()
             ->route('kuda.index')
@@ -144,9 +131,23 @@ class KudaController extends Controller
         // Default false agar tidak undefined di blade
         $bolehEditNama = false;
 
+        // Dropdown induk hanya mengambil kuda dari peternakan yang sama.
+        // Kuda yang sedang diedit tidak dimunculkan agar tidak bisa menjadi induknya sendiri.
+        $ayahOptions = $this->getKudaIndukOptions(
+            $kuda->id_peternakan,
+            Kuda::GENDER_JANTAN,
+            $kuda->id_kuda
+        );
+
+        $ibuOptions = $this->getKudaIndukOptions(
+            $kuda->id_peternakan,
+            Kuda::GENDER_BETINA,
+            $kuda->id_kuda
+        );
+
         // Admin bisa mengedit semua data kuda
         if ($user->role === User::ROLE_ADMIN) {
-            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama', 'ayahOptions', 'ibuOptions'));
         }
 
         // Peternak hanya bisa mengedit kuda miliknya sendiri
@@ -157,7 +158,7 @@ class KudaController extends Controller
                     ->with('error', 'Anda tidak bisa mengedit kuda ini.');
             }
 
-            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama', 'ayahOptions', 'ibuOptions'));
         }
 
         // Pembeli hanya bisa mengedit nama kuda jika memenuhi aturan lisensi
@@ -170,7 +171,7 @@ class KudaController extends Controller
                     ->with('error', 'Anda tidak memiliki lisensi untuk mengubah nama kuda ini.');
             }
 
-            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama', 'ayahOptions', 'ibuOptions'));
         }
 
         return redirect()
@@ -190,9 +191,9 @@ class KudaController extends Controller
 
         // Admin bisa memperbarui semua data kuda
         if ($user->role === User::ROLE_ADMIN) {
-            $validated = $this->validateKudaData($request);
+            $validated = $this->validateKudaData($request, $kuda->id_peternakan, $kuda->id_kuda);
+
             $kuda->update($validated);
-            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -207,11 +208,11 @@ class KudaController extends Controller
                     ->with('error', 'Anda tidak bisa mengubah data kuda ini.');
             }
 
-            $validated = $this->validateKudaData($request);
+            $validated = $this->validateKudaData($request, $kuda->id_peternakan, $kuda->id_kuda);
+
             $kuda->update($validated);
 
             // staging
-            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -235,9 +236,6 @@ class KudaController extends Controller
             $kuda->update([
                 'nama_kuda' => $request->nama_kuda,
             ]);
-
-            // Pembeli juga bisa ajukan lisensi dari form edit
-            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -330,18 +328,60 @@ class KudaController extends Controller
         return view('admin.kuda.index', compact('kuda', 'page'));
     }
 
-    private function validateKudaData(Request $request)
+    private function validateKudaData(Request $request, ?int $idPeternakan = null, ?int $exceptIdKuda = null)
     {
-        // Memvalidasi input data kuda
+        // Memvalidasi input data kuda.
+        // id_ibu dan id_ayah tidak cukup hanya exists, tetapi harus sesuai peternakan dan gender.
+        $idIbuRules = [
+            'nullable',
+            Rule::exists('kuda', 'id_kuda')->where(function ($query) use ($idPeternakan) {
+                return $query
+                    ->where('id_peternakan', $idPeternakan)
+                    ->where('gender', Kuda::GENDER_BETINA);
+            }),
+        ];
+
+        $idAyahRules = [
+            'nullable',
+            Rule::exists('kuda', 'id_kuda')->where(function ($query) use ($idPeternakan) {
+                return $query
+                    ->where('id_peternakan', $idPeternakan)
+                    ->where('gender', Kuda::GENDER_JANTAN);
+            }),
+        ];
+
+        if ($exceptIdKuda) {
+            $idIbuRules[] = Rule::notIn([$exceptIdKuda]);
+            $idAyahRules[] = Rule::notIn([$exceptIdKuda]);
+        }
+
         return $request->validate([
             'nama_kuda'   => 'required|string|max:100',
             'jenis_kuda'  => 'required|string|max:50',
             'gender'      => 'required|in:jantan,betina',
             'status_jual' => 'required|in:tersedia,terjual,breeding',
             'harga_buka'  => 'required|numeric|min:0',
-            'id_ibu'      => 'nullable|exists:kuda,id_kuda',
-            'id_ayah'     => 'nullable|exists:kuda,id_kuda',
+            'id_ibu'      => $idIbuRules,
+            'id_ayah'     => $idAyahRules,
+        ], [
+            'id_ibu.exists'  => 'Ibu harus kuda betina dari peternakan sendiri.',
+            'id_ayah.exists' => 'Ayah harus kuda jantan dari peternakan sendiri.',
+            'id_ibu.not_in'  => 'Kuda tidak bisa menjadi ibu untuk dirinya sendiri.',
+            'id_ayah.not_in' => 'Kuda tidak bisa menjadi ayah untuk dirinya sendiri.',
         ]);
+    }
+
+    private function getKudaIndukOptions(int $idPeternakan, string $gender, ?int $exceptIdKuda = null)
+    {
+        $query = Kuda::where('id_peternakan', $idPeternakan)
+            ->where('gender', $gender)
+            ->orderBy('nama_kuda');
+
+        if ($exceptIdKuda) {
+            $query->where('id_kuda', '!=', $exceptIdKuda);
+        }
+
+        return $query->get();
     }
 
     private function canPeternakManageKuda($user, $kuda)
@@ -368,41 +408,5 @@ class KudaController extends Controller
 
         // Nama bisa diubah jika kuda tidak berlisensi atau transaksi membeli lisensi
         return !$kuda->lisensi || $transaksi->id_lisensi !== null;
-    }
-
-    // Menangani pengajuan lisensi inline dari form kuda (create/edit)
-    private function handleInlineLisensi(Request $request, Kuda $kuda, $user)
-    {
-        // Abaikan jika checkbox tidak dicentang atau nomor sertifikat kosong
-        if (!$request->boolean('ajukan_lisensi') || !$request->filled('nomor_sertifikat')) {
-            return;
-        }
-
-        // Abaikan jika kuda sudah punya lisensi pending atau approved
-        $sudahAda = Lisensi::where('id_kuda', $kuda->id_kuda)
-            ->whereIn('status', [Lisensi::STATUS_PENDING, Lisensi::STATUS_APPROVED])
-            ->exists();
-
-        if ($sudahAda) {
-            return;
-        }
-
-        // Memvalidasi nomor sertifikat unik
-        $request->validate([
-            'nomor_sertifikat' => 'required|string|max:50|unique:lisensi,nomor_sertifikat',
-        ]);
-
-        // Menyimpan pengajuan lisensi baru dengan status pending
-        Lisensi::create([
-            'nomor_sertifikat'  => $request->nomor_sertifikat,
-            'penerbit'          => $request->penerbit,
-            'tgl_terbit'        => $request->tgl_terbit,
-            'masa_berlaku'      => $request->masa_berlaku,
-            'keaslian_ras'      => $request->keaslian_ras,
-            'riwayat_kesehatan' => $request->riwayat_kesehatan,
-            'id_kuda'           => $kuda->id_kuda,
-            'status'            => Lisensi::STATUS_PENDING,
-            'id_pengaju'        => $user->id_user,
-        ]);
     }
 }
