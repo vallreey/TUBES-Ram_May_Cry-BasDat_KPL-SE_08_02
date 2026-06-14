@@ -7,21 +7,10 @@
 <div class="row mt-4">
   <div class="col-lg-8">
     <div class="card">
-      <div class="card-header pb-0">
+      <div class="card-header">
         <h6>Tambah Kuda Baru</h6>
       </div>
       <div class="card-body">
-
-        @if($errors->any())
-          <div class="alert alert-danger text-sm mb-3">
-            <ul class="mb-0 ps-3">
-              @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
-        @endif
-
         <form action="{{ route('kuda.store') }}" method="POST">
           @csrf
 
@@ -59,7 +48,7 @@
             <select name="status_jual" class="form-control" required>
               <option value="">Pilih Status Jual</option>
               <option value="tersedia" {{ old('status_jual') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-              <option value="terjual"  {{ old('status_jual') == 'terjual'  ? 'selected' : '' }}>Terjual</option>
+              <option value="terjual" {{ old('status_jual') == 'terjual' ? 'selected' : '' }}>Terjual</option>
             </select>
           </div>
 
@@ -73,17 +62,44 @@
                    required>
           </div>
 
+          <label class="form-label">Ibu</label>
+          <div class="input-group input-group-outline mb-1">
+            <select name="id_ibu" class="form-control">
+              <option value="">Tidak dipilih</option>
+              @foreach($ibuOptions as $ibu)
+                <option value="{{ $ibu->id_kuda }}" {{ old('id_ibu') == $ibu->id_kuda ? 'selected' : '' }}>
+                  {{ $ibu->nama_kuda }} - Betina #{{ $ibu->id_kuda }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+          @error('id_ibu')
+            <small class="text-danger d-block mb-3">{{ $message }}</small>
+          @enderror
+
+          <label class="form-label">Ayah</label>
+          <div class="input-group input-group-outline mb-1">
+            <select name="id_ayah" class="form-control">
+              <option value="">Tidak dipilih</option>
+              @foreach($ayahOptions as $ayah)
+                <option value="{{ $ayah->id_kuda }}" {{ old('id_ayah') == $ayah->id_kuda ? 'selected' : '' }}>
+                  {{ $ayah->nama_kuda }} - Jantan #{{ $ayah->id_kuda }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+          @error('id_ayah')
+            <small class="text-danger d-block mb-3">{{ $message }}</small>
+          @enderror
+
           <div class="d-flex justify-content-end gap-2 mt-4">
             <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">
               Batal
             </a>
 
-          </div>
-          {{-- END LISENSI FORM --}}
-
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">Batal</a>
-            <button type="submit" class="btn bg-gradient-dark mb-0">Simpan</button>
+            <button type="submit" class="btn bg-gradient-dark mb-0">
+              Simpan
+            </button>
           </div>
 
         </form>
@@ -91,10 +107,4 @@
     </div>
   </div>
 </div>
-
-<script>
-function toggleLisensiForm(checkbox) {
-    document.getElementById('lisensiForm').style.display = checkbox.checked ? '' : 'none';
-}
-</script>
 @endsection
