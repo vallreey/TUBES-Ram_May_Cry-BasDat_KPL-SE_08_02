@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Kuda;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 trait FiltersKudaQuery
 {
+    use SecuresKudaSearchInput;
+
     private function applyKudaSearchAndFilters($query, Request $request)
     {
+        $this->validateKudaQueryInput($request);
         $this->applyKudaSearch($query, $request);
         $this->applyKudaGenderFilter($query, $request);
         $this->applyKudaSorting($query, $request);
@@ -16,19 +20,39 @@ trait FiltersKudaQuery
         return $query;
     }
 
+    private function validateKudaQueryInput(Request $request): void
+    {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'gender' => [
+                'nullable',
+                Rule::in([Kuda::GENDER_JANTAN, Kuda::GENDER_BETINA]),
+            ],
+            'sort' => [
+                'nullable',
+                Rule::in(['terbaru', 'terlama', 'nama_asc', 'nama_desc']),
+            ],
+        ]);
+    }
+
     private function applyKudaSearch($query, Request $request): void
     {
-        if (!$request->filled('search')) {
+        $search = $this->normalizeKudaSearchKeyword($request->input('search'));
+
+        if ($search === null) {
             return;
         }
 
-        $search = $request->input('search');
+        $keyword = $this->makeSecureLikeKeyword($search);
 
-        $query->where(function ($q) use ($search) {
-            $q->where('nama_kuda', 'like', "%{$search}%")
-                ->orWhere('jenis_kuda', 'like', "%{$search}%")
-                ->orWhereHas('peternakan', function ($peternakanQuery) use ($search) {
-                    $peternakanQuery->where('nama_peternakan', 'like', "%{$search}%");
+        $query->where(function ($q) use ($keyword) {
+            $q->whereRaw($this->secureLikeSql('nama_kuda'), [$keyword])
+                ->orWhereRaw($this->secureLikeSql('jenis_kuda'), [$keyword])
+                ->orWhereHas('peternakan', function ($peternakanQuery) use ($keyword) {
+                    $peternakanQuery->whereRaw(
+                        $this->secureLikeSql('nama_peternakan'),
+                        [$keyword]
+                    );
                 });
         });
     }
