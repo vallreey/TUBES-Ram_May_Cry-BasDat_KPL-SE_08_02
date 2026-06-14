@@ -7,10 +7,21 @@
 <div class="row mt-4">
   <div class="col-lg-8">
     <div class="card">
-      <div class="card-header">
+      <div class="card-header pb-0">
         <h6>Tambah Kuda Baru</h6>
       </div>
       <div class="card-body">
+
+        @if($errors->any())
+          <div class="alert alert-danger text-sm mb-3">
+            <ul class="mb-0 ps-3">
+              @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
+
         <form action="{{ route('kuda.store') }}" method="POST">
           @csrf
 
@@ -48,7 +59,7 @@
             <select name="status_jual" class="form-control" required>
               <option value="">Pilih Status Jual</option>
               <option value="tersedia" {{ old('status_jual') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-              <option value="terjual" {{ old('status_jual') == 'terjual' ? 'selected' : '' }}>Terjual</option>
+              <option value="terjual"  {{ old('status_jual') == 'terjual'  ? 'selected' : '' }}>Terjual</option>
             </select>
           </div>
 
@@ -67,9 +78,12 @@
               Batal
             </a>
 
-            <button type="submit" class="btn bg-gradient-dark mb-0">
-              Simpan
-            </button>
+          </div>
+          {{-- END LISENSI FORM --}}
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">Batal</a>
+            <button type="submit" class="btn bg-gradient-dark mb-0">Simpan</button>
           </div>
 
         </form>
@@ -77,4 +91,10 @@
     </div>
   </div>
 </div>
+
+<script>
+function toggleLisensiForm(checkbox) {
+    document.getElementById('lisensiForm').style.display = checkbox.checked ? '' : 'none';
+}
+</script>
 @endsection

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kuda;
+use App\Models\Lisensi;
 use App\Models\Peternakan;
 use App\Models\Transaksi;
 use App\Models\User;
@@ -79,6 +80,13 @@ class KudaController extends Controller
         // Memvalidasi data kuda sebelum disimpan
         $validated = $this->validateKudaData($request);
 
+        // Validasi nomor sertifikat jika sekaligus ajukan lisensi
+        if ($request->boolean('ajukan_lisensi')) {
+            $request->validate([
+                'nomor_sertifikat' => 'required|string|max:50|unique:lisensi,nomor_sertifikat',
+            ]);
+        }
+
         // Mengambil peternakan milik user
         $peternakan = Peternakan::where('id_user', $user->id_user)->first();
 
@@ -90,7 +98,7 @@ class KudaController extends Controller
         }
 
         // Menyimpan data kuda baru
-        Kuda::create([
+        $kuda = Kuda::create([
             'nama_kuda'     => $validated['nama_kuda'],
             'jenis_kuda'    => $validated['jenis_kuda'],
             'gender'        => $validated['gender'],
@@ -101,55 +109,74 @@ class KudaController extends Controller
             'id_ayah'       => $validated['id_ayah'] ?? null,
         ]);
 
+        // Menyimpan pengajuan lisensi jika diminta
+        if ($request->boolean('ajukan_lisensi') && $request->filled('nomor_sertifikat')) {
+            Lisensi::create([
+                'nomor_sertifikat'  => $request->nomor_sertifikat,
+                'penerbit'          => $request->penerbit,
+                'tgl_terbit'        => $request->tgl_terbit,
+                'masa_berlaku'      => $request->masa_berlaku,
+                'keaslian_ras'      => $request->keaslian_ras,
+                'riwayat_kesehatan' => $request->riwayat_kesehatan,
+                'id_kuda'           => $kuda->id_kuda,
+                'status'            => Lisensi::STATUS_PENDING,
+                'id_pengaju'        => $user->id_user,
+            ]);
+
+            return redirect()
+                ->route('kuda.index')
+                ->with('success', 'Data kuda berhasil ditambahkan dan lisensi diajukan, menunggu persetujuan admin.');
+        }
+
         return redirect()
             ->route('kuda.index')
             ->with('success', 'Data kuda berhasil ditambahkan.');
     }
 
     public function edit($id)
-{
-    // Mengambil user yang sedang login
-    $user = auth()->user();
+    {
+        // Mengambil user yang sedang login
+        $user = auth()->user();
 
-    // Mengambil data kuda beserta relasinya
-    $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
+        // Mengambil data kuda beserta relasinya
+        $kuda = Kuda::with(['peternakan', 'lisensi'])->findOrFail($id);
 
-    // Default false agar tidak undefined di blade
-    $bolehEditNama = false;
+        // Default false agar tidak undefined di blade
+        $bolehEditNama = false;
 
-    // Admin bisa mengedit semua data kuda
-    if ($user->role === User::ROLE_ADMIN) {
-        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
-    }
-
-    // Peternak hanya bisa mengedit kuda miliknya sendiri
-    if ($user->role === User::ROLE_PETERNAK) {
-        if (!$this->canPeternakManageKuda($user, $kuda)) {
-            return redirect()
-                ->route('kuda.index')
-                ->with('error', 'Anda tidak bisa mengedit kuda ini.');
+        // Admin bisa mengedit semua data kuda
+        if ($user->role === User::ROLE_ADMIN) {
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
         }
 
-        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
-    }
+        // Peternak hanya bisa mengedit kuda miliknya sendiri
+        if ($user->role === User::ROLE_PETERNAK) {
+            if (!$this->canPeternakManageKuda($user, $kuda)) {
+                return redirect()
+                    ->route('kuda.index')
+                    ->with('error', 'Anda tidak bisa mengedit kuda ini.');
+            }
 
-    // Pembeli hanya bisa mengedit nama kuda jika memenuhi aturan lisensi
-    if ($user->role === User::ROLE_PEMBELI) {
-        $bolehEditNama = $this->canPembeliEditNamaKuda($user, $kuda);
-
-        if (!$bolehEditNama) {
-            return redirect()
-                ->route('kuda.index')
-                ->with('error', 'Anda tidak memiliki lisensi untuk mengubah nama kuda ini.');
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
         }
 
-        return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
-    }
+        // Pembeli hanya bisa mengedit nama kuda jika memenuhi aturan lisensi
+        if ($user->role === User::ROLE_PEMBELI) {
+            $bolehEditNama = $this->canPembeliEditNamaKuda($user, $kuda);
 
-    return redirect()
-        ->route('kuda.index')
-        ->with('error', 'Role tidak dikenali.');
-}
+            if (!$bolehEditNama) {
+                return redirect()
+                    ->route('kuda.index')
+                    ->with('error', 'Anda tidak memiliki lisensi untuk mengubah nama kuda ini.');
+            }
+
+            return view('admin.kuda.edit', compact('kuda', 'bolehEditNama'));
+        }
+
+        return redirect()
+            ->route('kuda.index')
+            ->with('error', 'Role tidak dikenali.');
+    }
 
     public function update(Request $request, $id)
     {
@@ -164,8 +191,8 @@ class KudaController extends Controller
         // Admin bisa memperbarui semua data kuda
         if ($user->role === User::ROLE_ADMIN) {
             $validated = $this->validateKudaData($request);
-
             $kuda->update($validated);
+            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -181,10 +208,10 @@ class KudaController extends Controller
             }
 
             $validated = $this->validateKudaData($request);
-
             $kuda->update($validated);
 
             // staging
+            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -208,6 +235,9 @@ class KudaController extends Controller
             $kuda->update([
                 'nama_kuda' => $request->nama_kuda,
             ]);
+
+            // Pembeli juga bisa ajukan lisensi dari form edit
+            $this->handleInlineLisensi($request, $kuda, $user);
 
             return redirect()
                 ->route('kuda.index')
@@ -338,5 +368,41 @@ class KudaController extends Controller
 
         // Nama bisa diubah jika kuda tidak berlisensi atau transaksi membeli lisensi
         return !$kuda->lisensi || $transaksi->id_lisensi !== null;
+    }
+
+    // Menangani pengajuan lisensi inline dari form kuda (create/edit)
+    private function handleInlineLisensi(Request $request, Kuda $kuda, $user)
+    {
+        // Abaikan jika checkbox tidak dicentang atau nomor sertifikat kosong
+        if (!$request->boolean('ajukan_lisensi') || !$request->filled('nomor_sertifikat')) {
+            return;
+        }
+
+        // Abaikan jika kuda sudah punya lisensi pending atau approved
+        $sudahAda = Lisensi::where('id_kuda', $kuda->id_kuda)
+            ->whereIn('status', [Lisensi::STATUS_PENDING, Lisensi::STATUS_APPROVED])
+            ->exists();
+
+        if ($sudahAda) {
+            return;
+        }
+
+        // Memvalidasi nomor sertifikat unik
+        $request->validate([
+            'nomor_sertifikat' => 'required|string|max:50|unique:lisensi,nomor_sertifikat',
+        ]);
+
+        // Menyimpan pengajuan lisensi baru dengan status pending
+        Lisensi::create([
+            'nomor_sertifikat'  => $request->nomor_sertifikat,
+            'penerbit'          => $request->penerbit,
+            'tgl_terbit'        => $request->tgl_terbit,
+            'masa_berlaku'      => $request->masa_berlaku,
+            'keaslian_ras'      => $request->keaslian_ras,
+            'riwayat_kesehatan' => $request->riwayat_kesehatan,
+            'id_kuda'           => $kuda->id_kuda,
+            'status'            => Lisensi::STATUS_PENDING,
+            'id_pengaju'        => $user->id_user,
+        ]);
     }
 }
