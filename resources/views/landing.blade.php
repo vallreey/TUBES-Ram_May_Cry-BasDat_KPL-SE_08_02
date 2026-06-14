@@ -152,7 +152,7 @@
         }
 
         .hero-visual {
-            width: 20%;
+            width: 30%;
             height: 100%;
             position: absolute;
             right: 5%;
@@ -233,15 +233,6 @@
                 margin-top: 30px;
             }
 
-            .circle-bg {
-                width: 360px;
-                height: 250px;
-                left: 50%;
-                right: auto;
-                top: 55px;
-                transform: translateX(-50%);
-            }
-
             .horse-img {
                 width: 390px;
                 left: 50%;
@@ -279,14 +270,14 @@
         <div class="hero-content">
             <h1>
                 Nikmati Kemudahan<br>
-                Membeli Kuda<br>
-                Berkualitas!
+                Manajemen & Membeli<br>
+                Kuda Berkualitas!
             </h1>
 
             <p>
                 Temukan kuda terbaik dari peternakan terpercaya. Proses
                 pembelian, lisensi, transaksi, dan kawin silang dapat dilakukan
-                lebih mudah melalui Ram May Cry.
+                lebih mudah melalui OreNoAiba.
             </p>
 
             <div class="hero-buttons">
@@ -301,11 +292,10 @@
         </div>
 
         <div class="hero-visual">
-            <div class="circle-bg"></div>
 
             <img
-                src="{{ asset('material/img/sendiri/horserun.png') }}"
-                alt="horserun"
+                src="{{ asset('material/img/sendiri/LOGO3D.png') }}"
+                alt="LOGO3D"
                 class="horse-img">
         </div>
 
