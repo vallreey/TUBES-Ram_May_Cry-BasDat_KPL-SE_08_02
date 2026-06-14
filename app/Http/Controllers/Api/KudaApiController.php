@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\SecuresKudaSearchInput;
 use App\Models\Kuda;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class KudaApiController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, SecuresKudaSearchInput;
 
     public function index(Request $request)
     {
@@ -32,15 +33,21 @@ class KudaApiController extends Controller
             $query->where('gender', $request->gender);
         }
 
-        // Mencari data kuda berdasarkan nama, jenis, atau peternakan
-        if ($request->filled('search')) {
-            $search = $request->search;
+        // Mencari data kuda berdasarkan nama, jenis, atau peternakan.
+        // Keyword diamankan dengan escaping LIKE dan parameter binding.
+        $search = $this->normalizeKudaSearchKeyword($request->input('search'));
 
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_kuda', 'like', "%{$search}%")
-                  ->orWhere('jenis_kuda', 'like', "%{$search}%")
-                  ->orWhereHas('peternakan', function ($peternakanQuery) use ($search) {
-                      $peternakanQuery->where('nama_peternakan', 'like', "%{$search}%");
+        if ($search !== null) {
+            $keyword = $this->makeSecureLikeKeyword($search);
+
+            $query->where(function ($q) use ($keyword) {
+                $q->whereRaw($this->secureLikeSql('nama_kuda'), [$keyword])
+                  ->orWhereRaw($this->secureLikeSql('jenis_kuda'), [$keyword])
+                  ->orWhereHas('peternakan', function ($peternakanQuery) use ($keyword) {
+                      $peternakanQuery->whereRaw(
+                          $this->secureLikeSql('nama_peternakan'),
+                          [$keyword]
+                      );
                   });
             });
         }
