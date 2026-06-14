@@ -45,7 +45,7 @@
                                     </h4>
 
                                     <p class="text-secondary mb-0">
-                                        Kuda saya akan menjadi calon ibu dan masuk sebagai ID Ibu.
+                                        Kuda yang dipilih akan menjadi calon ibu.
                                     </p>
 
                                 </div>
@@ -70,7 +70,7 @@
                                     </h4>
 
                                     <p class="text-secondary mb-0">
-                                        Kuda saya akan menjadi calon ayah dan masuk sebagai ID Ayah.
+                                        Kuda yang dipilih akan menjadi calon ayah.
                                     </p>
 
                                 </div>

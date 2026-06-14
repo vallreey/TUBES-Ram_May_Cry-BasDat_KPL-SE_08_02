@@ -27,14 +27,6 @@
 
                     <input type="hidden" name="pengajuan_sebagai" value="{{ $sebagai }}">
 
-                    <div class="alert alert-info text-white text-sm">
-                        @if($sebagai === 'betina')
-                            Kuda saya yang tampil hanya betina. Kuda tujuan yang tampil hanya jantan dari peternak lain.
-                        @else
-                            Kuda saya yang tampil hanya jantan. Kuda tujuan yang tampil hanya betina dari peternak lain.
-                        @endif
-                    </div>
-
                     @if($kudaSaya->isEmpty())
                         <div class="alert alert-warning text-white text-sm">
                             Belum ada kuda {{ $sebagai }} yang tersedia untuk diajukan.

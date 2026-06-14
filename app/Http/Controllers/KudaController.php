@@ -258,7 +258,7 @@ class KudaController extends Controller
     private function getKudaByRole($user, Request $request)
     {
         // Query dasar untuk mengambil data kuda beserta relasinya
-        $query = Kuda::with(['peternakan', 'lisensi', 'transaksi']);
+        $query = Kuda::with(['peternakan', 'lisensi', 'transaksi', 'ayah', 'ibu']);
 
         // Admin dapat melihat semua data kuda
         if ($user->role === User::ROLE_ADMIN) {
