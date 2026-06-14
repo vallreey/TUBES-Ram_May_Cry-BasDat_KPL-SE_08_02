@@ -81,16 +81,6 @@
                    required>
           </div>
 
-          <label class="form-label">ID Peternakan</label>
-          <div class="input-group input-group-outline mb-3">
-            <input type="number"
-                   name="id_peternakan"
-                   class="form-control"
-                   placeholder="ID Peternakan"
-                   value="{{ old('id_peternakan', $kuda->id_peternakan) }}"
-                   required>
-          </div>
-
           <div class="d-flex justify-content-end gap-2 mt-4">
             <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">
               Batal
