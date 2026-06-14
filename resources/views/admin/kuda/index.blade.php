@@ -235,6 +235,9 @@
                     <p class="text-sm mb-1"><strong>Harga:</strong> Rp {{ number_format($item->harga_buka ?? 0, 0, ',', '.') }}</p>
                     <p class="text-sm mb-3"><strong>Peternakan:</strong> {{ $item->peternakan->nama_peternakan ?? '-' }}</p>
 
+
+                    @include('admin.partials.kuda-parent-info', ['kuda' => $item])
+
                     <hr>
 
                     <h6>Detail Lisensi</h6>

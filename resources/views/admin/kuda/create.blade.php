@@ -68,12 +68,11 @@
               <option value="">Tidak dipilih</option>
               @foreach($ibuOptions as $ibu)
                 <option value="{{ $ibu->id_kuda }}" {{ old('id_ibu') == $ibu->id_kuda ? 'selected' : '' }}>
-                  {{ $ibu->nama_kuda }} - Betina #{{ $ibu->id_kuda }}
+                  {{ $ibu->nama_kuda }} - Betina
                 </option>
               @endforeach
             </select>
           </div>
-          <small class="text-muted d-block mb-3">Hanya menampilkan kuda betina dari peternakan sendiri.</small>
           @error('id_ibu')
             <small class="text-danger d-block mb-3">{{ $message }}</small>
           @enderror
@@ -84,12 +83,11 @@
               <option value="">Tidak dipilih</option>
               @foreach($ayahOptions as $ayah)
                 <option value="{{ $ayah->id_kuda }}" {{ old('id_ayah') == $ayah->id_kuda ? 'selected' : '' }}>
-                  {{ $ayah->nama_kuda }} - Jantan #{{ $ayah->id_kuda }}
+                  {{ $ayah->nama_kuda }} - Jantan
                 </option>
               @endforeach
             </select>
           </div>
-          <small class="text-muted d-block mb-3">Hanya menampilkan kuda jantan dari peternakan sendiri.</small>
           @error('id_ayah')
             <small class="text-danger d-block mb-3">{{ $message }}</small>
           @enderror

@@ -22,7 +22,7 @@ class MarketplaceController extends Controller
 
     private function showMarketplaceByStatus(string $status, Request $request)
     {
-        $query = Kuda::with(['peternakan', 'lisensi', 'transaksi'])
+        $query = Kuda::with(['peternakan', 'lisensi', 'transaksi', 'ayah', 'ibu'])
             ->where('status_jual', $status);
 
         $kuda = $this->applyKudaSearchAndFilters($query, $request)->get();
