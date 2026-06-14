@@ -52,4 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('kawin-silang', KawinSilangController::class);
     Route::resource('lisensi', LisensiController::class);
     Route::resource('users', UserController::class);
+
+    // Route untuk approve/decline lisensi (hanya admin)
+    Route::post('/lisensi/{id}/approve', [LisensiController::class, 'approve'])->name('lisensi.approve');
+    Route::post('/lisensi/{id}/decline', [LisensiController::class, 'decline'])->name('lisensi.decline');
 });
