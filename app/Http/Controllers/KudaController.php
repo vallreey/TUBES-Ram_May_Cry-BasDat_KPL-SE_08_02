@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\FiltersKudaQuery;
+use App\Http\Controllers\Concerns\LogsPerformanceAnalysis;
 use App\Models\Kuda;
 use App\Models\Peternakan;
 use App\Models\Transaksi;
@@ -12,15 +13,20 @@ use Illuminate\Validation\Rule;
 
 class KudaController extends Controller
 {
-    use FiltersKudaQuery;
+    use FiltersKudaQuery, LogsPerformanceAnalysis;
 
     public function index(Request $request)
     {
         // Mengambil user yang sedang login
         $user = auth()->user();
 
-        // Mengambil data kuda berdasarkan role user lalu menerapkan search dan filter
-        $kuda = $this->getKudaByRole($user, $request);
+        // Mengambil data kuda sekaligus mencatat performa search, filter, sorting, dan query relasi
+        $kuda = $this->measurePerformance(
+            'Data Kuda',
+            $request,
+            fn () => $this->getKudaByRole($user, $request),
+            ['role' => $user->role]
+        );
 
         // Menentukan halaman aktif
         $page = 'owned';
