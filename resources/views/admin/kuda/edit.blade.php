@@ -102,7 +102,6 @@
               @endforeach
             </select>
           </div>
-          <small class="text-muted d-block mb-3">Hanya menampilkan kuda betina dari peternakan yang sama.</small>
           @error('id_ibu')
             <small class="text-danger d-block mb-3">{{ $message }}</small>
           @enderror
@@ -118,7 +117,6 @@
               @endforeach
             </select>
           </div>
-          <small class="text-muted d-block mb-3">Hanya menampilkan kuda jantan dari peternakan yang sama.</small>
           @error('id_ayah')
             <small class="text-danger d-block mb-3">{{ $message }}</small>
           @enderror
