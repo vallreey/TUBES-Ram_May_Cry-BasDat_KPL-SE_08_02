@@ -19,14 +19,16 @@
 
           <label class="form-label">Nama Kuda</label>
           @if($bolehEditNama || auth()->user()->role !== 'pembeli')
-
+          <div class="input-group input-group-outline mb-3">
             <input type="text"
             name="nama_kuda"
             class="form-control"
             value="{{ old('nama_kuda', $kuda->nama_kuda) }}"
             required>
+            </div>
 
             @else
+
 
                 <input type="text"
                     class="form-control"
