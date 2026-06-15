@@ -253,6 +253,12 @@
             OreNoAiba
         </a>
 
+        <div class="nav-menu">
+            <a href="#beranda">Beranda</a>
+            <a href="#keunggulan">Keunggulan</a>
+            <a href="#fitur">Fitur</a>
+            <a href="#tentang">Tentang</a>
+        </div>
 
         <div class="nav-actions">
             <a href="{{ route('login') }}" class="login-link">Masuk</a>

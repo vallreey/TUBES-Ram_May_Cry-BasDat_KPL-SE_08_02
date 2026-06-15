@@ -23,8 +23,8 @@ class DashboardController extends Controller
         // Mengambil total transaksi berdasarkan role user
         $totalTransaksi = $this->getTotalTransaksiByRole($user);
 
-        // Mengambil total data breeding
-        $totalBreeding = KawinSilang::count();
+        // Mengambil total data breeding berdasarkan role user
+        $totalBreeding = $this->getTotalBreedingByRole($user);
 
         // Mengambil total data peternakan
         $totalPeternakan = Peternakan::count();
@@ -32,11 +32,8 @@ class DashboardController extends Controller
         // Mengambil transaksi terbaru berdasarkan role user
         $transaksiTerbaru = $this->getTransaksiTerbaruByRole($user);
 
-        // Mengambil data kawin silang terbaru
-        $breedingTerbaru = KawinSilang::with(['kudaBetina', 'kudaJantan'])
-            ->latest()
-            ->take(5)
-            ->get();
+        // Mengambil data kawin silang terbaru berdasarkan role user
+        $breedingTerbaru = $this->getBreedingTerbaruByRole($user);
 
         // Menampilkan halaman dashboard
         return view('admin.dashboard', compact(
@@ -47,6 +44,41 @@ class DashboardController extends Controller
             'transaksiTerbaru',
             'breedingTerbaru'
         ));
+    }
+
+
+    private function getBreedingQueryByRole($user)
+    {
+        // Query dasar kawin silang untuk filter hak akses dashboard
+        $query = KawinSilang::query();
+
+        // Admin dapat melihat semua data kawin silang
+        if ($user->role === User::ROLE_ADMIN) {
+            return $query;
+        }
+
+        // User hanya melihat kawin silang yang melibatkan dirinya
+        return $query->where(function ($q) use ($user) {
+            $q->where('id_pemilik_betina', $user->id_user)
+              ->orWhere('id_pemilik_jantan', $user->id_user)
+              ->orWhere('id_pengaju', $user->id_user);
+        });
+    }
+
+    private function getTotalBreedingByRole($user)
+    {
+        // Menghitung total kawin silang sesuai hak akses user
+        return $this->getBreedingQueryByRole($user)->count();
+    }
+
+    private function getBreedingTerbaruByRole($user)
+    {
+        // Mengambil lima data kawin silang terbaru sesuai hak akses user
+        return $this->getBreedingQueryByRole($user)
+            ->with(['kudaBetina', 'kudaJantan'])
+            ->latest()
+            ->take(5)
+            ->get();
     }
 
     private function getTotalKudaByRole($user)
