@@ -45,6 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
     Route::get('/marketplace/terjual', [MarketplaceController::class, 'terjual'])->name('marketplace.terjual');
 
+    // Export PDF data kuda
+    Route::get('/kuda/export/pdf', [KudaController::class, 'exportPdf'])->name('kuda.export.pdf');
+
     // Resource route
     Route::resource('kuda', KudaController::class);
     Route::resource('peternakan', PeternakanController::class);

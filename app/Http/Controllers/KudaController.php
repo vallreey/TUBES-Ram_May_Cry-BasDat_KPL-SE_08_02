@@ -8,6 +8,7 @@ use App\Models\Kuda;
 use App\Models\Peternakan;
 use App\Models\Transaksi;
 use App\Models\User;
+use App\Support\LocalPdf\KudaPdfExporter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -33,6 +34,31 @@ class KudaController extends Controller
 
         // Menampilkan halaman data kuda
         return view('admin.kuda.index', compact('kuda', 'page'));
+    }
+
+
+    public function exportPdf(Request $request)
+    {
+        // Mengambil user yang sedang login agar data PDF tetap mengikuti hak akses role.
+        $user = auth()->user();
+
+        // Data yang diexport mengikuti search, filter, dan sorting yang sedang aktif di halaman data kuda.
+        $kuda = $this->measurePerformance(
+            'Export PDF Data Kuda',
+            $request,
+            fn () => $this->getKudaByRole($user, $request),
+            ['role' => $user->role, 'format' => 'pdf']
+        );
+
+        // Memanggil library lokal untuk mengubah collection data kuda menjadi binary PDF.
+        $pdf = app(KudaPdfExporter::class)->generate($kuda, $user, $request);
+
+        // Mengirim response download agar file PDF langsung tersimpan di browser user.
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . KudaPdfExporter::filename() . '"',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        ]);
     }
 
     public function create()
