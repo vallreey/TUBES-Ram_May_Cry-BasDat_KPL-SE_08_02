@@ -27,7 +27,7 @@ trait SecuresKudaSearchInput
     }
 
     /**
-     * Escape wildcard LIKE agar input seperti %, _, atau backslash
+     * Escape wildcard LIKE biar input seperti %, _, atau backslash
      * tidak mengubah pola pencarian secara bebas.
      */
     private function makeSecureLikeKeyword(string $keyword): string
