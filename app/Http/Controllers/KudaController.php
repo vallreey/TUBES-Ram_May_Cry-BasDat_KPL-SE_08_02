@@ -90,8 +90,15 @@ class KudaController extends Controller
         // id_ibu dan id_ayah harus berasal dari peternakan sendiri sesuai gendernya.
         $validated = $this->validateKudaData($request, $peternakan->id_peternakan);
 
+        // Validasi nomor sertifikat jika sekaligus ajukan lisensi
+        if ($request->boolean('ajukan_lisensi')) {
+            $request->validate([
+                'nomor_sertifikat' => 'required|string|max:50|unique:lisensi,nomor_sertifikat',
+            ]);
+        }
+
         // Menyimpan data kuda baru
-        Kuda::create([
+        $kuda = Kuda::create([
             'nama_kuda'     => $validated['nama_kuda'],
             'jenis_kuda'    => $validated['jenis_kuda'],
             'gender'        => $validated['gender'],
@@ -101,6 +108,25 @@ class KudaController extends Controller
             'id_ibu'        => $validated['id_ibu'] ?? null,
             'id_ayah'       => $validated['id_ayah'] ?? null,
         ]);
+
+        // Simpan lisensi jika diajukan sekaligus
+        if ($request->boolean('ajukan_lisensi') && $request->filled('nomor_sertifikat')) {
+            \App\Models\Lisensi::create([
+                'nomor_sertifikat'  => $request->nomor_sertifikat,
+                'penerbit'          => $request->penerbit,
+                'tgl_terbit'        => $request->tgl_terbit,
+                'masa_berlaku'      => $request->masa_berlaku,
+                'keaslian_ras'      => $request->keaslian_ras,
+                'riwayat_kesehatan' => $request->riwayat_kesehatan,
+                'id_kuda'           => $kuda->id_kuda,
+                'status'            => 'pending',
+                'id_pengaju'        => $user->id_user,
+            ]);
+
+            return redirect()
+                ->route('kuda.index')
+                ->with('success', 'Data kuda berhasil ditambahkan dan lisensi diajukan, menunggu persetujuan admin.');
+        }
 
         return redirect()
             ->route('kuda.index')
