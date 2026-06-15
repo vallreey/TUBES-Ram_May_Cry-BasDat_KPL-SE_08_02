@@ -108,3 +108,12 @@
         width: 100%;
     }
 }
+
+
+.kuda-export-pdf-btn {
+    /* Menjaga tombol Export PDF tetap sejajar dengan tombol filter. */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}

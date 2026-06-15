@@ -36,9 +36,18 @@
 
             <div class="px-4 pt-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 kuda-toolbar-row pt-3">
-                    @include('admin.partials.kuda-filter-dropdown', [
-                        'action' => route('kuda.index'),
-                    ])
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        @include('admin.partials.kuda-filter-dropdown', [
+                            'action' => route('kuda.index'),
+                        ])
+
+                        {{-- Tombol export PDF membawa search, filter, dan sort yang sedang aktif. --}}
+                        <a href="{{ route('kuda.export.pdf', request()->query()) }}"
+                           class="btn btn-sm bg-gradient-danger kuda-export-pdf-btn mb-0">
+                            <span class="material-symbols-rounded kuda-filter-icon">picture_as_pdf</span>
+                            Export PDF
+                        </a>
+                    </div>
 
                     @if($hasActiveQuery)
                         <div class="text-end">
