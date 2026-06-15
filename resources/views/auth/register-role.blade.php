@@ -38,6 +38,15 @@
       justify-content: center;
       margin: 0 auto 1rem;
       font-size: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .role-card .role-icon-logo {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
     }
     .role-card .role-title {
       font-size: 1.1rem;
@@ -83,8 +92,9 @@
                   {{-- Pilihan Pembeli --}}
                   <div class="flex-fill">
                     <a href="{{ route('register', ['role' => 'pembeli']) }}" class="role-card text-center">
+                      {{-- Icon role pembeli menggunakan logo lokal di depan lingkaran --}}
                       <div class="icon-wrap bg-gradient-info mx-auto">
-                        <i class="fa fa-shopping-cart text-white"></i>
+                        <img src="{{ asset('material/img/sendiri/horseshoe_putih.png') }}" alt="Icon Pembeli" class="role-icon-logo">
                       </div>
                       <p class="role-title">Pembeli</p>
                       <p class="role-desc">Saya ingin mencari dan membeli kuda dari peternakan terpercaya.</p>
@@ -94,8 +104,9 @@
                   {{-- Pilihan Peternak --}}
                   <div class="flex-fill">
                     <a href="{{ route('register', ['role' => 'peternak']) }}" class="role-card text-center">
+                      {{-- Icon role peternak menggunakan logo lokal di depan lingkaran --}}
                       <div class="icon-wrap bg-gradient-success mx-auto">
-                        <i class="fa fa-horse text-white"></i>
+                        <img src="{{ asset('material/img/sendiri/horseshoe_putih.png') }}" alt="Icon Peternak" class="role-icon-logo">
                       </div>
                       <p class="role-title">Peternak</p>
                       <p class="role-desc">Saya memiliki peternakan dan ingin menjual kuda di platform ini.</p>
