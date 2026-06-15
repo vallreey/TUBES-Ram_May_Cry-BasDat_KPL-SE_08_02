@@ -11,6 +11,17 @@
         <h6>Tambah Kuda Baru</h6>
       </div>
       <div class="card-body">
+
+        @if($errors->any())
+          <div class="alert alert-danger text-sm mb-3">
+            <ul class="mb-0 ps-3">
+              @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
+
         <form action="{{ route('kuda.store') }}" method="POST">
           @csrf
 
@@ -48,7 +59,7 @@
             <select name="status_jual" class="form-control" required>
               <option value="">Pilih Status Jual</option>
               <option value="tersedia" {{ old('status_jual') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-              <option value="terjual" {{ old('status_jual') == 'terjual' ? 'selected' : '' }}>Terjual</option>
+              <option value="terjual"  {{ old('status_jual') == 'terjual'  ? 'selected' : '' }}>Terjual</option>
             </select>
           </div>
 
@@ -92,14 +103,84 @@
             <small class="text-danger d-block mb-3">{{ $message }}</small>
           @enderror
 
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">
-              Batal
-            </a>
+          <hr class="horizontal dark my-3">
 
-            <button type="submit" class="btn bg-gradient-dark mb-0">
-              Simpan
-            </button>
+          {{-- SEKSI LISENSI --}}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <h6 class="mb-0">Lisensi Kuda</h6>
+            <span class="badge bg-gradient-secondary">Opsional</span>
+          </div>
+          <p class="text-sm text-secondary mb-3">
+            Kamu bisa langsung mengajukan lisensi saat menambah kuda. Lisensi akan menunggu persetujuan admin.
+          </p>
+
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="ajukanLisensi" name="ajukan_lisensi" value="1"
+                   {{ old('ajukan_lisensi') ? 'checked' : '' }}
+                   onchange="toggleLisensiForm(this)">
+            <label class="form-check-label text-sm" for="ajukanLisensi">
+              Sekaligus ajukan lisensi
+            </label>
+          </div>
+
+          <div id="lisensiForm" style="{{ old('ajukan_lisensi') ? '' : 'display:none;' }}">
+
+            <label class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
+            <div class="input-group input-group-outline mb-3">
+              <input type="text"
+                     name="nomor_sertifikat"
+                     class="form-control"
+                     placeholder="Contoh: LIS-KUDA-2026-001"
+                     value="{{ old('nomor_sertifikat') }}">
+            </div>
+
+            <label class="form-label">Penerbit</label>
+            <div class="input-group input-group-outline mb-3">
+              <input type="text"
+                     name="penerbit"
+                     class="form-control"
+                     placeholder="Nama institusi penerbit"
+                     value="{{ old('penerbit') }}">
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label">Tanggal Terbit</label>
+                <div class="input-group input-group-outline mb-3">
+                  <input type="date" name="tgl_terbit" class="form-control" value="{{ old('tgl_terbit') }}">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Masa Berlaku</label>
+                <div class="input-group input-group-outline mb-3">
+                  <input type="date" name="masa_berlaku" class="form-control" value="{{ old('masa_berlaku') }}">
+                </div>
+              </div>
+            </div>
+
+            <label class="form-label">Keaslian Ras</label>
+            <div class="input-group input-group-outline mb-3">
+              <input type="text"
+                     name="keaslian_ras"
+                     class="form-control"
+                     placeholder="Contoh: Thoroughbred Murni"
+                     value="{{ old('keaslian_ras') }}">
+            </div>
+
+            <label class="form-label">Riwayat Kesehatan</label>
+            <div class="input-group input-group-outline mb-3">
+              <textarea name="riwayat_kesehatan"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Deskripsi kondisi kesehatan kuda...">{{ old('riwayat_kesehatan') }}</textarea>
+            </div>
+
+          </div>
+          {{-- END LISENSI --}}
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ route('kuda.index') }}" class="btn btn-light mb-0">Batal</a>
+            <button type="submit" class="btn bg-gradient-dark mb-0">Simpan</button>
           </div>
 
         </form>
@@ -107,4 +188,10 @@
     </div>
   </div>
 </div>
+
+<script>
+function toggleLisensiForm(checkbox) {
+    document.getElementById('lisensiForm').style.display = checkbox.checked ? '' : 'none';
+}
+</script>
 @endsection
