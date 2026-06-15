@@ -10,100 +10,163 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    // Middleware helper: pastikan hanya admin yang bisa akses
+    private function adminOnly()
+    {
+        if (auth()->user()->role !== User::ROLE_ADMIN) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+    }
+
     public function index()
     {
-        // Hanya admin yang bisa melihat data user
-        if (auth()->user()->role !== 'admin') {
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Anda tidak memiliki akses ke halaman user.');
-        }
+        $this->adminOnly();
 
-        // Mengambil semua data user
-        $users = User::latest()->get();
+        $users = User::with('peternakan')->latest()->get();
 
-        // Menampilkan halaman data user
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        // Mengarahkan ke halaman user karena fitur tambah user manual belum digunakan
-        return redirect()
-            ->route('users.index')
-            ->with('error', 'Fitur tambah user manual belum tersedia.');
+        $this->adminOnly();
+
+        return view('admin.users.create');
     }
 
     public function store(Request $request)
     {
-        // Mengarahkan ke halaman user karena fitur simpan user manual belum digunakan
+        $this->adminOnly();
+
+        $validated = $request->validate([
+            'nama_lengkap' => 'required|string|max:50',
+            'email'        => 'required|email|max:100|unique:users,email',
+            'no_telp'      => 'nullable|string|max:20',
+            'alamat'       => 'nullable|string',
+            'role'         => 'required|in:admin,peternak,pembeli',
+            'password'     => 'required|string|min:8|confirmed',
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'email.required'        => 'Email wajib diisi.',
+            'email.unique'          => 'Email sudah digunakan.',
+            'role.required'         => 'Role wajib dipilih.',
+            'password.required'     => 'Password wajib diisi.',
+            'password.min'          => 'Password minimal 8 karakter.',
+            'password.confirmed'    => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        User::create([
+            'nama_lengkap' => $validated['nama_lengkap'],
+            'email'        => $validated['email'],
+            'no_telp'      => $validated['no_telp'] ?? null,
+            'alamat'       => $validated['alamat'] ?? null,
+            'role'         => $validated['role'],
+            'password'     => Hash::make($validated['password']),
+        ]);
+
         return redirect()
             ->route('users.index')
-            ->with('error', 'Fitur simpan user manual belum tersedia.');
+            ->with('success', 'User berhasil ditambahkan.');
     }
 
     public function show($id)
     {
-        // Hanya admin yang bisa melihat detail user
-        if (auth()->user()->role !== 'admin') {
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Anda tidak memiliki akses ke detail user.');
-        }
+        $this->adminOnly();
 
-        // Mengambil data user berdasarkan ID
-        $user = User::findOrFail($id);
+        $user = User::with(['peternakan'])->findOrFail($id);
 
-        // Menampilkan halaman detail user
         return view('admin.users.show', compact('user'));
     }
 
     public function edit($id)
     {
-        // Mengarahkan ke halaman user karena fitur edit user manual belum digunakan
-        return redirect()
-            ->route('users.index')
-            ->with('error', 'Fitur edit user manual belum tersedia.');
+        $this->adminOnly();
+
+        $user = User::findOrFail($id);
+
+        return view('admin.users.edit', compact('user'));
     }
 
     public function update(Request $request, $id)
     {
-        // Mengarahkan ke halaman user karena fitur update user manual belum digunakan
+        $this->adminOnly();
+
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama_lengkap' => 'required|string|max:50',
+            'email'        => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id_user, 'id_user')],
+            'no_telp'      => 'nullable|string|max:20',
+            'alamat'       => 'nullable|string',
+            'role'         => 'required|in:admin,peternak,pembeli',
+            'password'     => 'nullable|string|min:8|confirmed',
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'email.required'        => 'Email wajib diisi.',
+            'email.unique'          => 'Email sudah digunakan akun lain.',
+            'role.required'         => 'Role wajib dipilih.',
+            'password.min'          => 'Password minimal 8 karakter.',
+            'password.confirmed'    => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        // Mencegah admin mengubah role dirinya sendiri
+        if ($user->id_user === auth()->user()->id_user && $validated['role'] !== User::ROLE_ADMIN) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak bisa mengubah role akun Anda sendiri.')
+                ->withInput();
+        }
+
+        $updateData = [
+            'nama_lengkap' => $validated['nama_lengkap'],
+            'email'        => $validated['email'],
+            'no_telp'      => $validated['no_telp'] ?? null,
+            'alamat'       => $validated['alamat'] ?? null,
+            'role'         => $validated['role'],
+        ];
+
+        // Hanya update password jika diisi
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($updateData);
+
         return redirect()
             ->route('users.index')
-            ->with('error', 'Fitur update user manual belum tersedia.');
+            ->with('success', 'Data user berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        // Hanya admin yang bisa menghapus user
-        if (auth()->user()->role !== 'admin') {
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Anda tidak memiliki akses untuk menghapus user.');
-        }
+        $this->adminOnly();
 
-        // Mengambil data user yang akan dihapus
         $user = User::findOrFail($id);
 
-        // Mencegah admin menghapus akunnya sendiri
         if ($user->id_user === auth()->user()->id_user) {
-            return redirect()
-                ->route('users.index')
+            return redirect()->route('users.index')
                 ->with('error', 'Anda tidak bisa menghapus akun sendiri.');
         }
 
-        // Menghapus data user
+        // Cek apakah user punya relasi yang mencegah penghapusan
+        $punyaTransaksi = \App\Models\Transaksi::where('id_pembeli', $user->id_user)
+            ->orWhere('id_penjual', $user->id_user)
+            ->exists();
+
+        $punyaPeternakan = \App\Models\Peternakan::where('id_user', $user->id_user)->exists();
+
+        if ($punyaTransaksi || $punyaPeternakan) {
+            return redirect()->route('users.index')
+                ->with('error', 'User tidak bisa dihapus karena masih memiliki data transaksi atau peternakan terkait.');
+        }
+
         $user->delete();
 
-        return redirect()
-            ->route('users.index')
+        return redirect()->route('users.index')
             ->with('success', 'User berhasil dihapus.');
     }
 
     public function profile()
     {
-        // Menampilkan halaman profile user yang sedang login
         return view('admin.profile', [
             'user' => Auth::user(),
         ]);
@@ -111,46 +174,38 @@ class UserController extends Controller
 
     public function updateProfile(Request $request)
     {
-        // Mengambil user yang sedang login
         $user = Auth::user();
 
-        // Memvalidasi data profile
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:60'],
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->ignore($user->id_user, 'id_user'),
-            ],
-            'no_telp' => ['nullable', 'string', 'max:15'],
-            'alamat' => ['nullable', 'string'],
+            'email'        => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id_user, 'id_user')],
+            'no_telp'      => ['nullable', 'string', 'max:15'],
+            'alamat'       => ['nullable', 'string'],
             'password_lama' => ['nullable', 'required_with:password'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password'     => ['nullable', 'string', 'min:8', 'confirmed'],
         ], [
-            'nama_lengkap.required' => 'Username / nama lengkap wajib diisi.',
-            'nama_lengkap.max' => 'Username / nama lengkap maksimal 60 karakter.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah digunakan oleh akun lain.',
+            'nama_lengkap.required'       => 'Username / nama lengkap wajib diisi.',
+            'nama_lengkap.max'            => 'Username / nama lengkap maksimal 60 karakter.',
+            'email.required'              => 'Email wajib diisi.',
+            'email.email'                 => 'Format email tidak valid.',
+            'email.unique'               => 'Email sudah digunakan oleh akun lain.',
             'password_lama.required_with' => 'Password lama wajib diisi jika ingin mengganti password.',
-            'password.min' => 'Password baru minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.min'               => 'Password baru minimal 8 karakter.',
+            'password.confirmed'         => 'Konfirmasi password baru tidak cocok.',
         ]);
 
-        // Mengecek password lama jika user ingin mengganti password
         if ($request->filled('password') && !Hash::check($request->password_lama, $user->password)) {
             return back()
                 ->withErrors(['password_lama' => 'Password lama tidak sesuai.'])
                 ->withInput();
         }
 
-        // Memperbarui data profile
         $user->update([
             'nama_lengkap' => $validated['nama_lengkap'],
-            'email' => $validated['email'],
-            'no_telp' => $validated['no_telp'] ?? null,
-            'alamat' => $validated['alamat'] ?? null,
-            'password' => $request->filled('password')
+            'email'        => $validated['email'],
+            'no_telp'      => $validated['no_telp'] ?? null,
+            'alamat'       => $validated['alamat'] ?? null,
+            'password'     => $request->filled('password')
                 ? Hash::make($validated['password'])
                 : $user->password,
         ]);
