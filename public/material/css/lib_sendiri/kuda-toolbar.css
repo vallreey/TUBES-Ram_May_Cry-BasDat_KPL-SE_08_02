@@ -1,0 +1,119 @@
+.kuda-card-header {
+    gap: 1rem;
+}
+
+.kuda-search-form {
+    width: min(100%, 460px);
+}
+
+.kuda-search-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.45rem 0.5rem 0.45rem 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.85rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(20, 20, 20, 0.06);
+}
+
+.kuda-search-icon {
+    color: #6c757d;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.kuda-search-input {
+    min-width: 0;
+    padding-left: 0;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.kuda-search-input:focus {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.kuda-search-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    color: #6c757d;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    border-radius: 50%;
+}
+
+.kuda-search-clear:hover {
+    color: #111827;
+    background: #e9ecef;
+}
+
+.kuda-search-button {
+    flex: 0 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.kuda-toolbar-row {
+    border-top: 1px solid #f0f2f5;
+}
+
+.kuda-filter-dropdown .dropdown-toggle::after {
+    margin-left: 0.45rem;
+    vertical-align: middle;
+}
+
+.kuda-filter-icon {
+    font-size: 18px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+.kuda-filter-menu {
+    min-width: 280px;
+    border: 0;
+    border-radius: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .kuda-card-header {
+        align-items: stretch !important;
+    }
+
+    .kuda-search-form {
+        width: 100%;
+    }
+
+    .kuda-search-panel {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .kuda-search-input {
+        flex-basis: calc(100% - 32px);
+    }
+
+    .kuda-search-button {
+        width: 100%;
+    }
+}
+
+
+.kuda-export-pdf-btn {
+    /* Menjaga tombol Export PDF tetap sejajar dengan tombol filter. */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}

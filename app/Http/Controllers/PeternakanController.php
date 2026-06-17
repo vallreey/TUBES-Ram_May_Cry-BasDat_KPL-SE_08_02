@@ -2,42 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Peternakan;
 
 class PeternakanController extends Controller
 {
     public function index()
     {
-        return view('admin.dashboard'); // sementara arahkan ke dashboard dulu
-    }
+        // Mengambil user yang sedang login
+        $user = auth()->user();
 
-    public function create()
-    {
-        return view('admin.dashboard');
-    }
+        // Mengambil data peternakan beserta relasi user, kuda, dan lisensi
+        $query = Peternakan::with([
+            'user',
+            'kuda',
+            'kuda.lisensi'
+        ])->latest();
 
-    public function store(Request $request)
-    {
-        //
-    }
+        // Peternak hanya bisa melihat peternakan miliknya sendiri
+        if ($user->role === 'peternak') {
+            $query->where('id_user', $user->id_user);
+        }
 
-    public function show($id)
-    {
-        return view('admin.dashboard');
-    }
+        // Menjalankan query dan mengambil data peternakan
+        $peternakan = $query->get();
 
-    public function edit($id)
-    {
-        return view('admin.dashboard');
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
-    {
-        //
+        // Mengirim data peternakan ke halaman index
+        return view('admin.peternakan.index', compact('peternakan'));
     }
 }

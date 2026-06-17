@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('material/img/apple-icon.png') }}">
-  <link rel="icon" type="image/png" href="{{ asset('material/img/favicon.png') }}">
-  <title>@yield('title', 'Ram May Cry') | Sistem Informasi Kuda</title>
+  <link rel="icon" type="image/png" href="{{ asset('material/img/sendiri/logo_app_white_bg.png') }}">
+  <title>@yield('title', 'Sistem Informasi Kuda')</title>
 
   {{-- Fonts & Icons --}}
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
@@ -19,10 +19,35 @@
   {{-- Material Dashboard CSS --}}
   <link id="pagestyle" href="{{ asset('material/css/material-dashboard.css') }}" rel="stylesheet" />
 
+  <link rel="stylesheet" href="{{ asset('material/css/lib_sendiri/sidebar-animation.css') }}">
+
+  <link rel="stylesheet" href="{{ asset('material/css/lib_sendiri/loading.css') }}">
+
+  <link rel="stylesheet" href="{{ asset('material/css/lib_sendiri/loading.css') }}">
+
   @stack('styles')
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
+    <!-- LIBRARY LOCAL Loading Animation -->
+    <div id="page-loader">
+
+        <div class="loader-content">
+
+            <img
+                src="{{ asset('material/img/sendiri/ASMC_walk_l.gif') }}"
+                alt="Loading"
+                class="loader-gif"
+            >
+
+            <span class="loader-text">
+                NOW LOADING...
+            </span>
+
+        </div>
+
+    </div>
+
 
   {{-- Sidebar --}}
   @include('layouts.partials.sidebar')
@@ -60,6 +85,10 @@
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
   </script>
+
+  <!-- LIBRARY LOCAL Loading JS -->
+    <script src="{{ asset('material/js/lib_sendiri/loading.js') }}">
+    </script>
 
   @stack('scripts')
 </body>
