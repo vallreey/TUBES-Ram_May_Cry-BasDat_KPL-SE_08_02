@@ -100,7 +100,7 @@ class AuthController extends Controller
             'password'     => Hash::make($validated['password']),
         ]);
 
-        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        // Parameterization/Generics-AdhiPuspoHadikusumo
 
         // Membuat data peternakan jika user mendaftar sebagai peternak
         if ($validated['role'] === User::ROLE_PETERNAK) {
