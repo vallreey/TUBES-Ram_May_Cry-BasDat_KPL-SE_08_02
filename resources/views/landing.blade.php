@@ -241,6 +241,57 @@
                 transform: translateX(-50%);
             }
         }
+        .wave svg {
+    width: 100%;
+    height: 135px;
+    display: block;
+}
+
+/* ANIMASI SAAT PERTAMA BUKA / REFRESH */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(35px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.navbar,
+.hero-content,
+.hero-visual,
+.wave {
+    opacity: 0;
+    animation: fadeSlideUp 0.8s ease forwards;
+}
+
+.navbar {
+    animation-delay: 0.1s;
+}
+
+.hero-content {
+    animation-delay: 0.25s;
+}
+
+.hero-visual {
+    animation-delay: 0.45s;
+}
+
+.wave {
+    animation-delay: 0.65s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar,
+    .hero-content,
+    .hero-visual,
+    .wave {
+        animation: none;
+        opacity: 1;
+    }
+}
     </style>
 </head>
 <body>
