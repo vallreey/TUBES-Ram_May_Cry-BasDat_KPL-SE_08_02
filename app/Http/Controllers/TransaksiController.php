@@ -68,7 +68,7 @@ class TransaksiController extends Controller
 
         // staging
 
-        // Membuat transaksi dengan status awal pending
+        // Membuat transaksi dengan status awal pending (AUTOMATION)
         Transaksi::create([
             'status_transaksi' => Transaksi::STATUS_PENDING,
             'tgl_transaksi'    => now(),
@@ -134,7 +134,7 @@ class TransaksiController extends Controller
                 ->with('error', 'Transaksi ini sudah diproses.');
         }
 
-        // Menerima transaksi dan mengubah status kuda menjadi terjual
+        // Menerima transaksi dan mengubah status kuda menjadi terjual (AUTOMATION)
         if ($validated['aksi'] === 'terima') {
             $transaksi->update([
                 'status_transaksi' => Transaksi::STATUS_SELESAI,
@@ -147,7 +147,7 @@ class TransaksiController extends Controller
             }
         }
 
-        // Menolak transaksi dan mengubah status transaksi menjadi dibatalkan
+        // Menolak transaksi dan mengubah status transaksi menjadi dibatalkan (AUTOMATION)
         if ($validated['aksi'] === 'tolak') {
             $transaksi->update([
                 'status_transaksi' => Transaksi::STATUS_DIBATALKAN,
@@ -161,8 +161,6 @@ class TransaksiController extends Controller
 
     public function destroy($id)
     {
-        // staging
-
         // Mengarahkan ke halaman transaksi karena hapus transaksi belum digunakan
         return redirect()
             ->route('transaksi.index')

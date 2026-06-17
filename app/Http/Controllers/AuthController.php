@@ -65,7 +65,7 @@ class AuthController extends Controller
         // Mengambil role dari query string
         $role = $request->query('role');
 
-        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        // Parameterization/Generics-AdhiPuspoHadikusumo
 
         // Menampilkan form register pembeli
         if ($role === User::ROLE_PEMBELI) {
@@ -74,7 +74,6 @@ class AuthController extends Controller
 
         // Menampilkan form register peternak
         if ($role === User::ROLE_PETERNAK) {
-            // staging
             return view('auth.register-peternak');
         }
 
@@ -84,7 +83,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        // Parameterization/Generics-AdhiPuspoHadikusumo
 
         // Memvalidasi data registrasi
         $validated = $this->validateRegisterData($request);
@@ -101,7 +100,7 @@ class AuthController extends Controller
             'password'     => Hash::make($validated['password']),
         ]);
 
-        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        // Parameterization/Generics-AdhiPuspoHadikusumo
 
         // Membuat data peternakan jika user mendaftar sebagai peternak
         if ($validated['role'] === User::ROLE_PETERNAK) {

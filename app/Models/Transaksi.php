@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+// (MODEL AUTOMATION) - Model Transaksi dengan relasi ke Kuda, Lisensi, Pembeli, dan Penjual
 class Transaksi extends Model
 {
     public const STATUS_PENDING = 'pending';
     public const STATUS_PROSES = 'proses';
     public const STATUS_SELESAI = 'selesai';
     public const STATUS_DIBATALKAN = 'dibatalkan';
-    
+
     protected $table = 'transaksi';
     protected $primaryKey = 'id_transaksi';
 
