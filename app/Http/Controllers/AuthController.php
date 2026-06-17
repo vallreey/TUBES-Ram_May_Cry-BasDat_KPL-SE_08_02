@@ -83,7 +83,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        // Parameterization/Generics-AdhiPuspoHadikusumo-MuhammadNaufalHanif
+        // Parameterization/Generics-AdhiPuspoHadikusumo
 
         // Memvalidasi data registrasi
         $validated = $this->validateRegisterData($request);
